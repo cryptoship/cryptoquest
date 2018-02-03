@@ -11,14 +11,6 @@ contract CryptoQuest {
 
     mapping(address => uint[]) charactersByAddress;
     mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-    mapping(address => uint[]) itemsByAddress;
-
 
     uint8 ITEM_SLOT_HEAD = 0;
     uint8 ITEM_SLOT_RIGHT_HAND = 1;
