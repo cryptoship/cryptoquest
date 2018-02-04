@@ -16,6 +16,8 @@ contract CryptoQuest {
     
     uint[] randomNumbers;
     uint lastRandonNumberIndex;
+    
+    uint private characterBasePrice;
 
     uint8 ITEM_SLOT_HEAD = 0;
     uint8 ITEM_SLOT_NECK = 1;
@@ -30,9 +32,8 @@ contract CryptoQuest {
         // items the Character is wearing
         uint[6] items;
         
-		uint8 level;
-		
         // attributes of the character
+        uint8 level;
         uint8 health;
         uint8 strength;
         uint8 dexterity;
@@ -65,6 +66,7 @@ contract CryptoQuest {
     function CryptoQuest() public {
         owner = msg.sender;
     }
+    
     
     function equip(uint characterId, uint headItem, uint rightHandItem) public {
         require(msg.sender == ownerByTokenId[characterId]);
@@ -141,6 +143,19 @@ contract CryptoQuest {
         itemsByTokenId[item.tokenId] = item;
         itemsByAddress[owner].push(item.tokenId);
     }
+    
+    function generateRandomCharacter() public payable {
+      
+    }
+    
+    function setCharacterBasePrice(uint basePrice) public admin {
+      characterBasePrice = basePrice;
+    }
+    
+    function getCharacterBasePrice() public admin returns (uint) {
+      return characterBasePrice;
+    }
+    
     
     function generateCharacter(uint8 health,
                                uint8 strength,
