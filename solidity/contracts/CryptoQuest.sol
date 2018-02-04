@@ -144,10 +144,6 @@ contract CryptoQuest {
         itemsByAddress[owner].push(item.tokenId);
     }
     
-    function generateRandomCharacter() public payable {
-      
-    }
-    
     function setCharacterBasePrice(uint basePrice) public admin {
       characterBasePrice = basePrice;
     }
@@ -156,6 +152,20 @@ contract CryptoQuest {
       return characterBasePrice;
     }
     
+    function setRandomNumbers(uint[] numbers) public admin {
+      randomNumbers = numbers;
+      lastRandonNumberIndex = 0;
+    }
+    
+    function getRandomNumbers() public admin returns (uint[]) {
+      return randomNumbers;
+    }
+    
+    function generateRandomCharacter() public payable {
+      require(msg.value >= characterBasePrice);
+      
+      
+    }
     
     function generateCharacter(uint8 health,
                                uint8 strength,
