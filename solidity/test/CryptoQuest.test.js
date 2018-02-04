@@ -30,9 +30,18 @@ describe('CryptoQuest', () => {
 		assert.equal(accounts[0], owner);
 	});
 	
-	/*it('it updates message', async () => {
-		await inbox.methods.setMessage('bye').send({from: accounts[0]});
-		const message = await inbox.methods.message().call();
-		assert.equal('bye', message);
-	});*/
+	it('user can not set setCharacterBasePrice', async () => {
+		try {
+		  await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[1]});
+	      assert(false);
+		} catch(e) {
+	      assert.ok(e);
+	    }
+	});
+	
+	it('owner can set setCharacterBasePrice', async () => {
+		await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
+		const price = await cryptoQuest.methods.getCharacterBasePrice().call();
+		assert.equal(100, price);
+	});
 });
