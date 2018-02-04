@@ -2,7 +2,7 @@ pragma solidity ^0.4.0;
 
 contract CryptoQuest {
     
-    address owner;
+    address public owner;
 
     mapping(uint => address) ownerByTokenId;
     mapping(uint => Character) characterByTokenId;
@@ -12,30 +12,59 @@ contract CryptoQuest {
     mapping(address => uint[]) charactersByAddress;
     mapping(address => uint[]) itemsByAddress;
     
+    Dungeon[] dungeons;
     
+    uint[] randomNumbers;
+    uint lastRandonNumberIndex;
+
     uint8 ITEM_SLOT_HEAD = 0;
-    uint8 ITEM_SLOT_RIGHT_HAND = 1;
+    uint8 ITEM_SLOT_NECK = 1;
+    uint8 ITEM_SLOT_BODY = 2;
+    uint8 ITEM_SLOT_FEET = 3;
+    uint8 ITEM_SLOT_LEFT_HAND = 4;
+    uint8 ITEM_SLOT_RIGHT_HAND = 5;
+	
     struct Character {
         uint256 tokenId;
         
         // items the Character is wearing
-        uint[2] items;
+        uint[6] items;
         
+		uint8 level;
+		
         // attributes of the character
         uint8 health;
         uint8 strength;
+        uint8 dexterity;
+        uint8 intelligence;
+        uint8 wisdom;
+        uint8 charisma;		
     }
-    
+
     struct Item {
       uint256 tokenId;
-      // attributes of the item
-      
+
+      uint8 slot;
+      string description;
+      uint8 armor;
+      uint8 damage;
+      uint8 attackSpeed;
+      uint8 evasion;
+      uint8 blockChance;
+    }
+
+    struct Dungeon {
+      uint8 dungeonId;
+
+      string description;
+
+      uint8 damage;
+      uint8 health;
     }
     
     function CryptoQuest() public {
         owner = msg.sender;
     }
-    
     
     function equip(uint characterId, uint headItem, uint rightHandItem) public {
         require(msg.sender == ownerByTokenId[characterId]);
@@ -90,25 +119,50 @@ contract CryptoQuest {
         _;
     }
 
-    function generateItem(/*itemdata*/) public admin {
+    function generateItem(uint8 slot,
+                          string descripton,
+                          uint8 armor,
+                          uint8 damage,
+                          uint8 attackSpeed,
+                          uint8 evasion,
+						  uint8 blockChance) public admin {
         Item memory item;
         item.tokenId = lastTokenId++;
         // set item data
+		item.slot = slot;
+		item.description = descripton;
+		item.armor = armor;
+		item.damage = damage;
+		item.attackSpeed = attackSpeed;
+		item.evasion = evasion;
+		item.blockChance = blockChance;
         
         ownerByTokenId[item.tokenId] = owner;
         itemsByTokenId[item.tokenId] = item;
         itemsByAddress[owner].push(item.tokenId);
     }
     
-    function generateCharacter(uint8 health, uint8 strength) public admin {
+    function generateCharacter(uint8 health,
+                               uint8 strength,
+                               uint8 dexterity,
+                               uint8 intelligence,
+                               uint8 wisdom,
+                               uint8 charisma,
+							   uint8 level) public admin {
+		
         Character memory character;
         character.tokenId = lastTokenId++;
-        character.strength = strength;
-        character.health = health;
-        
         ownerByTokenId[character.tokenId] = owner;
         characterByTokenId[character.tokenId] = character;
         charactersByAddress[owner].push(character.tokenId);
+		
+	    character.health = health;
+        character.strength = strength;
+		character.dexterity = dexterity;
+		character.intelligence = intelligence;
+		character.wisdom = wisdom;
+		character.charisma = charisma;
+		character.level = level;
     }
     
     function getTotalItemsForSale() public view returns (uint) {
