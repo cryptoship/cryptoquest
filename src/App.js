@@ -9,6 +9,8 @@ import About from './pages/About'
 import Inventory from './pages/Inventory'
 import Play from './pages/Play'
 import Market from './pages/Market'
+import Items from './components/Items'
+import Characters from './components/Characters'
 
 class App extends Component {
   render() {
@@ -17,9 +19,11 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={Landing} />
           <Route exact path="/about" component={About} />          
-          <Route exact path="/play" component={Play} />          
-          <Route exact path="/market" component={Market} />          
-          <Route exact path="/inventory" component={Inventory} />          
+          <Route exact path="/play" component={Play} />                    
+          <Route exact path="/inventory" component={Inventory} />
+          <Route exact path="/market" component={Market} />                    
+          <Route exact path="/market/items" component={Items} />  
+          <Route exact path="/market/characters" component={Characters} />            
         </Switch>
       </div>
     )
