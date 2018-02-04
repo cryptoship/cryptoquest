@@ -24,4 +24,15 @@ describe('CryptoQuest', () => {
 		console.log('Address: ', cryptoQuest.options.address);
 		assert.ok(cryptoQuest.options.address)
 	});
+	
+	it('owner is deployer', async () => {
+		const owner = await cryptoQuest.methods.owner().call();
+		assert.equal(accounts[0], owner);
+	});
+	
+	/*it('it updates message', async () => {
+		await inbox.methods.setMessage('bye').send({from: accounts[0]});
+		const message = await inbox.methods.message().call();
+		assert.equal('bye', message);
+	});*/
 });
