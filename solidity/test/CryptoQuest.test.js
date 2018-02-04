@@ -30,7 +30,7 @@ describe('CryptoQuest', () => {
 		assert.equal(accounts[0], owner);
 	});
 	
-	it('user can not set setCharacterBasePrice', async () => {
+	it('user can not set characterBasePrice', async () => {
 		try {
 		  await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[1]});
 	      assert(false);
@@ -39,9 +39,33 @@ describe('CryptoQuest', () => {
 	    }
 	});
 	
-	it('owner can set setCharacterBasePrice', async () => {
+	it('owner can set characterBasePrice', async () => {
 		await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
 		const price = await cryptoQuest.methods.getCharacterBasePrice().call();
 		assert.equal(100, price);
+	});
+	
+	it('user can not set random numbers', async () => {
+		try {
+		  await cryptoQuest.methods.setRandomNumbers([1, 2, 3]).send({from: accounts[1]});
+	      assert(false);
+		} catch(e) {
+	      assert.ok(e);
+	    }
+	});
+	
+	it('user can not get random numbers', async () => {
+		try {
+		  await cryptoQuest.methods.getRandomNumbers().call();
+	      assert(false);
+		} catch(e) {
+	      assert.ok(e);
+	    }
+	});
+	
+	it('owner can set random numbers', async () => {
+	    await cryptoQuest.methods.setRandomNumbers([1, 2, 3]).send({from: accounts[0], gas : '1000000'});
+	    const numbers = await cryptoQuest.methods.getRandomNumbers().call();
+		assert.deepEqual([1,2,3], numbers); 
 	});
 });
