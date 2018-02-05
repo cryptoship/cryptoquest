@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "ganache-cli": "^6.0.3",
+    "ganache-cli": "^6.1.0-beta.0",
     "mocha": "^5.0.0",
     "prettier": "^1.10.2",
     "react": "^16.2.0",

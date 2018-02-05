@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import Pillow from '../../components/Pillow'
 
 export default class About extends Component {
   render() {

@@ -68,4 +68,36 @@ describe('CryptoQuest', () => {
 	    const numbers = await cryptoQuest.methods.getRandomNumbers().call();
 		assert.deepEqual([1,2,3], numbers); 
 	});
+
+    it('users can generate a random character', async () => {
+        await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
+        await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
+
+        await cryptoQuest.methods.generateRandomCharacter(0).send({from: accounts[1], gas : '1000000', value: 100});
+
+        const charIdArray = await cryptoQuest.methods.getCharacterIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
+
+        assert.equal(1, charIdArray.length);
+        const array = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
+
+        assert.equal(1, array[0]);  // tokenId
+        assert.equal(0, array[1]);  // characterType
+        assert.equal(1, array[2]);  // level
+
+        assert.equal(5, array[3]);
+        assert.equal(5, array[4]);
+        assert.equal(5, array[5]);
+
+        assert.equal(5, array[6]);
+        assert.equal(5, array[7]);
+        assert.equal(5, array[8]);
+
+        assert.equal(0, array[9]);
+        assert.equal(0, array[10]);
+        assert.equal(0, array[11]);
+
+        assert.equal(0, array[12]);
+        assert.equal(0, array[13]);
+        assert.equal(0, array[14]);
+    });
 });
