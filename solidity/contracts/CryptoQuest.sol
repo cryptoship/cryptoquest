@@ -55,12 +55,15 @@ contract CryptoQuest {
 
       uint8 slot;
       string description;
+      string name;
       uint8 armor;
       uint8 damage;
       uint8 attackSpeed;
       uint8 evasion;
       uint8 blockChance;
     }
+
+    Item[] private startItems;
 
     struct Dungeon {
       uint8 dungeonId;
@@ -70,35 +73,113 @@ contract CryptoQuest {
       uint8 damage;
       uint8 health;
     }
-    
+
     function CryptoQuest() public {
         owner = msg.sender;
         lastTokenId = 1;
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_RIGHT_HAND,
+                name: "Dagger of doom",
+                description : "",
+                armor : 0,
+                damage: 9,
+                attackSpeed: 5,
+                evasion : 2,
+                blockChance : 1
+            }));
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_RIGHT_HAND,
+                name: "sword",
+                description : "",
+                armor : 3,
+                damage: 10,
+                attackSpeed: 2,
+                evasion : 0,
+                blockChance : 4
+            }));
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_RIGHT_HAND,
+                name: "boomerang",
+                description : "",
+                armor : 0,
+                damage: 1,
+                attackSpeed: 5,
+                evasion : 0,
+                blockChance : 0
+            }));
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_FEET,
+                name: "basic boots",
+                description : "",
+                armor : 6,
+                damage: 0,
+                attackSpeed: 0,
+                evasion : 3,
+                blockChance : 1
+            }));
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_FEET,
+                name: "basic boots",
+                description : "",
+                armor : 6,
+                damage: 0,
+                attackSpeed: 0,
+                evasion : 3,
+                blockChance : 1
+            }));
+
+        startItems.push(
+            Item({
+                tokenId: 0,
+                slot: ITEM_SLOT_BODY,
+                name: "basic chest armor",
+                description : "",
+                armor : 3,
+                damage: 0,
+                attackSpeed: 0,
+                evasion : 1,
+                blockChance : 0
+            }));
     }
-    
-    
+
+
     function equip(uint characterId, uint headItem, uint rightHandItem) public {
         require(msg.sender == ownerByTokenId[characterId]);
         require(msg.sender == ownerByTokenId[headItem]);
         require(msg.sender == ownerByTokenId[rightHandItem]);
-        
+
         Character storage character = characterByTokenId[characterId];
         character.items[ITEM_SLOT_HEAD] = headItem;
         character.items[ITEM_SLOT_RIGHT_HAND] = rightHandItem;
     }
-    
+
     function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
         equip(characterId, headItem, rightHandItem);
         require(msg.sender == ownerByTokenId[characterId]);
-        
+
         // is this actually a Character
-        
+
         Character memory character = characterByTokenId[characterId];
-        
+
         Item[] memory items = loadItems(character);
-        
+
         // throw the dice
-        
+
         if (true) {
             Item newItem;
             //newItem.tokenId = lastTokenId++;
@@ -109,13 +190,13 @@ contract CryptoQuest {
             // choose an item and destroy it
             Item memory item = items[0];
             //uint tokenId = item.tokenId;
-            
+
             // remove from Character
             // remove from owners
         }
-        
+
     }
-    
+
     function loadItems(Character character) private view returns (Item[]) {
         require(character.items.length < 256);
         Item[] memory items;
@@ -124,19 +205,36 @@ contract CryptoQuest {
         }
         return items;
     }
-    
+
     modifier admin() {
         require(msg.sender == owner);
         _;
     }
 
+
+    function generateRandomItem() public payable {
+      require(msg.value >= characterBasePrice);
+    }
+
+
     function generateItem(uint8 slot,
+                              string descripton,
+                              uint8 armor,
+                              uint8 damage,
+                              uint8 attackSpeed,
+                              uint8 evasion,
+    						  uint8 blockChance) public admin {
+            generateItemForOwner(slot, descripton, armor, damage, attackSpeed, evasion, blockChance, owner);
+        }
+
+    function generateItemForOwner(uint8 slot,
                           string descripton,
                           uint8 armor,
                           uint8 damage,
                           uint8 attackSpeed,
                           uint8 evasion,
-						  uint8 blockChance) public admin {
+						  uint8 blockChance,
+						  address newOwner) private {
         Item memory item;
         item.tokenId = lastTokenId++;
         // set item data
@@ -148,9 +246,9 @@ contract CryptoQuest {
 		item.evasion = evasion;
 		item.blockChance = blockChance;
         
-        ownerByTokenId[item.tokenId] = owner;
+        ownerByTokenId[item.tokenId] = newOwner;
         itemsByTokenId[item.tokenId] = item;
-        itemsByAddress[owner].push(item.tokenId);
+        itemsByAddress[newOwner].push(item.tokenId);
     }
     
     function setCharacterBasePrice(uint basePrice) public admin {
