@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 export default class Navigation extends Component {
   render() {
@@ -11,9 +11,15 @@ export default class Navigation extends Component {
           <TitleLink to="/">Title</TitleLink>
         </Left>
         <Middle>
-          <MainLink to="/inventory">Inventory</MainLink>
-          <MainLink to="/market">Market</MainLink>
-          <MainLink to="/play">Play</MainLink>
+          <MainLink to="/inventory" activeClassName="active">
+            Inventory
+          </MainLink>
+          <MainLink to="/market" activeClassName="active">
+            Market
+          </MainLink>
+          <MainLink to="/play" activeClassName="active">
+            Play
+          </MainLink>
         </Middle>
         <Right>{/* nothing here yet */}</Right>
       </NavigationContainer>
@@ -53,13 +59,18 @@ const Right = styled.div`
 
 const TitleLink = styled(Link)`
   color: #22386f;
-  text-decoration: none;
   font-size: 1.7em;
+  text-decoration: none;
+  padding-bottom: 3px;
 `
 
-const MainLink = styled(Link)`
+const MainLink = styled(NavLink)`
   color: #22386f;
   text-decoration: none;
   font-size: 1.4em;
-  padding: 0 10px;
+  padding: 0 10px 8px 10px;
+  &.active {
+    padding-bottom: 5px;
+    border-bottom: 3px solid #22386f;
+  }
 `
