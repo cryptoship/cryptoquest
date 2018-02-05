@@ -3,7 +3,7 @@ export default class Index extends Component {
   render() {
     return (
       <div>
-        <h2>Market</h2>
+        <h2>Inventory</h2>
       </div>
     );
   }
