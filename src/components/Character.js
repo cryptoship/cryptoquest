@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export default class Character extends Component {
   state = {
     name: 'Joe',
-    img: 'https://cdn.petcarerx.com/LPPE/images/articlethumbs/Cat-Scratch-Fever-Small.jpgs',
+    img: 'https://cdn.petcarerx.com/LPPE/images/articlethumbs/Cat-Scratch-Fever-Small.jpg',
     health: 7,
     dex: 9,
     wisdom: 8,
@@ -15,21 +15,51 @@ export default class Character extends Component {
   render() {
     return (
       <div>
-        <div>
-          <div>Name:</div>
-          <div>{this.state.name}</div>
-          <div>health</div>
-          <div>{this.state.health}</div>
-          <div>dex</div>
-          <div>{this.state.dex}</div>
-          <div>intel</div>
-          <div>{this.state.intel}</div>
-          <div>wisdom</div>
-          <div>{this.state.wisdom}</div>
-          <div>ETH:</div>
-          <div>{this.state.value}</div>
-        </div>
+      <CharCard>
+        <Name>{this.state.name}</Name>
+        <Img src={this.state.img} />
+        <Skills>
+          <div>health {this.state.health}</div>
+
+          <div>dex {this.state.dex}</div>
+
+          <div>intel {this.state.intel}</div>
+
+          <div>wisdom {this.state.wisdom}</div>
+        </Skills>
+        <Cost>ETH: {this.state.value}</Cost>
+      </CharCard>
       </div>
     );
   }
 }
+
+const CharCard = styled.div`
+  display: grid;
+  grid-template-rows: auto auto 100px 50px;
+  grid-template-columns: 250px;
+  box-shadow: 0px 0px 31px 0px rgba(0,0,0,0.26);
+  width: 250px;
+`;
+
+const Img = styled.img`
+  width: -webkit-fill-available;
+`;
+
+const Name = styled.div`
+  align-self: center;
+  padding: 10px;
+  background-color: #d8d8d8;
+  font-size: 30px;
+  font-weight: 500;
+`;
+
+const Skills = styled.div`
+  align-self: center;
+`;
+
+const Cost = styled.div`
+  align-self: center;
+  padding: 20px;
+  background-color: #d8d8d8;
+`;

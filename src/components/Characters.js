@@ -7,8 +7,20 @@ export default class Characters extends Component {
     return (
       <div>
         Characters
-        <Character />
+        <GridOfChar>
+          <Character />
+          <Character />
+          <Character />
+        </GridOfChar>
       </div>
     );
   }
 }
+
+const GridOfChar = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 250px);
+  grid-gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+`;
