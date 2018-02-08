@@ -15,20 +15,17 @@ export default class Character extends Component {
   render() {
     return (
       <div>
-      <CharCard>
-        <Name>{this.state.name}</Name>
-        <Img src={this.state.img} />
-        <Skills>
-          <div>health {this.state.health}</div>
-
-          <div>dex {this.state.dex}</div>
-
-          <div>intel {this.state.intel}</div>
-
-          <div>wisdom {this.state.wisdom}</div>
-        </Skills>
-        <Cost>ETH: {this.state.value}</Cost>
-      </CharCard>
+        <CharCard>
+          <Name>{this.state.name}</Name>
+          <Img src={this.state.img} />
+          <Skills>
+            <div>health {this.state.health}</div>
+            <div>dex {this.state.dex}</div>
+            <div>intel {this.state.intel}</div>
+            <div>wisdom {this.state.wisdom}</div>
+          </Skills>
+          <Cost>ETH: {this.state.value}</Cost>
+        </CharCard>
       </div>
     );
   }
@@ -38,7 +35,7 @@ const CharCard = styled.div`
   display: grid;
   grid-template-rows: auto auto 100px 50px;
   grid-template-columns: 250px;
-  box-shadow: 0px 0px 31px 0px rgba(0,0,0,0.26);
+  box-shadow: 0px 0px 31px 0px rgba(0, 0, 0, 0.26);
   width: 250px;
 `;
 
