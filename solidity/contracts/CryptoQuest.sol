@@ -51,27 +51,27 @@ contract CryptoQuest {
     }
 
     struct Item {
-      uint256 tokenId;
+        uint256 tokenId;
 
-      uint8 slot;
-      string description;
-      string name;
-      uint8 armor;
-      uint8 damage;
-      uint8 attackSpeed;
-      uint8 evasion;
-      uint8 blockChance;
+        uint8 slot;
+        string description;
+        string name;
+        uint8 armor;
+        uint8 damage;
+        uint8 attackSpeed;
+        uint8 evasion;
+        uint8 blockChance;
     }
 
     Item[] private startItems;
 
     struct Dungeon {
-      uint8 dungeonId;
+        uint8 dungeonId;
 
-      string description;
+        string description;
 
-      uint8 damage;
-      uint8 health;
+        uint8 damage;
+        uint8 health;
     }
 
     function CryptoQuest() public {
@@ -267,23 +267,23 @@ contract CryptoQuest {
     }
     
     function getRandomNumbers() public admin returns (uint8[]) {
-      return randomNumbers;
+        return randomNumbers;
     }
     
     function generateRandomCharacter(uint8 characterType) public payable {
-      require(msg.value >= characterBasePrice);
-      require(characterType <= CHARACTER_TYPE_PANDA);
+        require(msg.value >= characterBasePrice);
+        require(characterType <= CHARACTER_TYPE_PANDA);
 
-      generateCharacterForOwner(
-          getRandomAttribute(),
-          getRandomAttribute(),
-          getRandomAttribute(),
-          getRandomAttribute(),
-          getRandomAttribute(),
-          getRandomAttribute(),
-          /* level */ 1,
-          characterType,
-          msg.sender);
+        generateCharacterForOwner(
+        getRandomAttribute(),
+        getRandomAttribute(),
+        getRandomAttribute(),
+        getRandomAttribute(),
+        getRandomAttribute(),
+        getRandomAttribute(),
+        /* level */ 1,
+        characterType,
+        msg.sender);
     }
 
     function getRandomAttribute() private returns (uint8) {
@@ -311,14 +311,14 @@ contract CryptoQuest {
     }
 
     function generateCharacterForOwner(uint8 health,
-                               uint8 strength,
-                               uint8 dexterity,
-                               uint8 intelligence,
-                               uint8 wisdom,
-                               uint8 charisma,
-							   uint8 level,
-							   uint8 characterType,
-							   address newOwner) private {
+                                        uint8 strength,
+                                        uint8 dexterity,
+                                        uint8 intelligence,
+                                        uint8 wisdom,
+                                        uint8 charisma,
+                                        uint8 level,
+                                        uint8 characterType,
+                                        address newOwner) private {
 
         Character memory character;
 
@@ -388,7 +388,7 @@ contract CryptoQuest {
         require(to <= itemIds.length);
         
         Item[] memory items;
-        for (uint i = 0; i < to- from; i++) {
+        for (uint i = 0; i < to-from; i++) {
             uint tokenId = itemIds[i + from];
             items[i] = itemsByTokenId[tokenId];
         }
@@ -403,7 +403,7 @@ contract CryptoQuest {
         
         Character[] memory characters;
         
-        for (uint i = 0; i < to- from; i++) {
+        for (uint i = 0; i < to-from; i++) {
             uint tokenId = characterIds[i + from];
             characters[i] = characterByTokenId[tokenId];
         }
@@ -413,10 +413,9 @@ contract CryptoQuest {
     
     function buyItem(uint itemId) public payable {
         // is the item for sale?
-        require(ownerByTokenId[itemId] == owner);
+        require(ownerByTokenId[itemId] == owner);        
         
-        // validate money here (e.g. enough)
-        
+        // validate money here (e.g. enough)        
         transferItem(owner, msg.sender, itemId);
     }
     
@@ -444,16 +443,28 @@ contract CryptoQuest {
         transferCharacter(owner, msg.sender, characterId);
     }
     
+    //transfers character from one address to another
+    //@params the id of charater
     function transferCharacter(address from, address to, uint characterId) private {
+        //check if owner of charater
         require(ownerByTokenId[characterId] == from);
         
+        //change the owner to the to address
         ownerByTokenId[characterId] = to;
+        
+        //add this to the to's character array 
         charactersByAddress[to].push(characterId);
         
+        //get the array from owns
         uint[] memory tokenIds = charactersByAddress[from];
+        
+        //find that character's index
         uint index = findValueInArray(tokenIds, characterId);
         
+        //get back an array after this index(character) has been removed
         uint[] memory newTokenIds = removeFromArray(tokenIds, index);
+        
+        //set the new array 
         charactersByAddress[from] = newTokenIds;
     }
     
@@ -486,94 +497,91 @@ contract CryptoQuest {
     }
 
     function getCharacter(uint characterId) public view returns (uint[15]) {
-                      Character memory c = characterByTokenId[characterId];
-                      uint[15] memory array;
-                      array[0] = c.tokenId;
-                      array[1] = c.characterType;
+        Character memory c = characterByTokenId[characterId];
+        uint[15] memory array;
+        array[0] = c.tokenId;
+        array[1] = c.characterType;
 
 
-                      array[2] = c.level;
-                      array[3] = c.health;
-                      array[4] = c.strength;
-                      array[5] = c.dexterity;
-                      array[6] = c.intelligence;
-                      array[7] = c.wisdom;
-                      array[8] = c.charisma;
+        array[2] = c.level;
+        array[3] = c.health;
+        array[4] = c.strength;
+        array[5] = c.dexterity;
+        array[6] = c.intelligence;
+        array[7] = c.wisdom;
+        array[8] = c.charisma;
 
-                      array[9] = c.items[0];
-                      array[10] = c.items[1];
-                      array[11] = c.items[2];
-                      array[12] = c.items[3];
-                      array[13] = c.items[4];
-                      array[14] = c.items[5];
+        array[9] = c.items[0];
+        array[10] = c.items[1];
+        array[11] = c.items[2];
+        array[12] = c.items[3];
+        array[13] = c.items[4];
+        array[14] = c.items[5];
 
-                      return array;
-                }
-
-
-        function strConcat(string first, string second) private returns (string) {
-              bytes memory bytesFirst = bytes(first);
-              bytes memory bytesSecond = bytes(second);
-
-              string memory tempString = new string(bytesFirst.length + bytesSecond.length);
-              bytes memory array = bytes(tempString);
-              uint j = 0;
-              for (uint i = 0; i < bytesFirst.length; i++) {
-                array[j++] = bytesFirst[i];
-              }
-
-              for (i = 0; i < bytesSecond.length; i++) {
-                  array[j++] = bytesSecond[i];
-              }
-
-              return string(array);
-          }
-
-          function uintToString(uint v) constant returns (string str) {
-                                          if (v == 0) {
-                                            return "0";
-                                          }
-
-                                          string memory result;
-
-                                          while(v != 0) {
-                                              uint remainder = v % 10;
-                                              v = v / 10;
-                                              bytes[] memory b;
-                                              if (v == 0) {
-                                                  result = strConcat(result, "0");
-                                              } else if (v == 1) {
-                                                  result = strConcat(result, "1");
-
-                                              } else if (v == 2) {
-                                                  result = strConcat(result, "2");
-
-                                              } else if (v == 3) {
-                                                  result = strConcat(result, "3");
-
-                                              } else if (v == 4) {
-                                                  result = strConcat(result, "4");
-
-                                              } else if (v == 5) {
-                                                  result = strConcat(result, "5");
-
-                                              } else if (v == 6) {
-                                                  result = strConcat(result, "6");
-
-                                              } else if (v == 7) {
-                                                  result = strConcat(result, "7");
-
-                                              }else if (v == 8) {
-                                                  result = strConcat(result, "8");
-
-                                              }else if (v == 9) {
-                                                  result = strConcat(result, "9");
-
-                                              }
+        return array;
+    }
 
 
-                                          }
-                                          return result;
+    function strConcat(string first, string second) private returns (string) {
+        bytes memory bytesFirst = bytes(first);
+        bytes memory bytesSecond = bytes(second);
 
-                                         }
+        string memory tempString = new string(bytesFirst.length + bytesSecond.length);
+        bytes memory array = bytes(tempString);
+        uint j = 0;
+        for (uint i = 0; i < bytesFirst.length; i++) {
+        array[j++] = bytesFirst[i];
+        }
+
+        for (i = 0; i < bytesSecond.length; i++) {
+            array[j++] = bytesSecond[i];
+        }
+
+        return string(array);
+    }
+
+    function uintToString(uint v) constant public returns (string str) {
+        if (v == 0) {
+        return "0";
+        }
+
+        string memory result;
+
+        while(v != 0) {
+            uint remainder = v % 10;
+            v = v / 10;
+            bytes[] memory b;
+            if (v == 0) {
+                result = strConcat(result, "0");
+            } else if (v == 1) {
+                result = strConcat(result, "1");
+
+            } else if (v == 2) {
+                result = strConcat(result, "2");
+
+            } else if (v == 3) {
+                result = strConcat(result, "3");
+
+            } else if (v == 4) {
+                result = strConcat(result, "4");
+
+            } else if (v == 5) {
+                result = strConcat(result, "5");
+
+            } else if (v == 6) {
+                result = strConcat(result, "6");
+
+            } else if (v == 7) {
+                result = strConcat(result, "7");
+
+            }else if (v == 8) {
+                result = strConcat(result, "8");
+
+            }else if (v == 9) {
+                result = strConcat(result, "9");
+
+            }
+        }
+        return result;
+        }
 }
