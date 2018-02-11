@@ -214,6 +214,8 @@ contract CryptoQuest {
 
     function generateRandomItem() public payable {
       require(msg.value >= characterBasePrice);
+
+
     }
 
 
