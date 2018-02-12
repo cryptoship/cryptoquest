@@ -287,7 +287,7 @@ contract CryptoQuest {
     }
 
     function getRandomAttribute() private returns (uint8) {
-        return 5; //+ getNextRandomNumber() % 21;
+        return 5 + getNextRandomNumber() % 21;
     }
 
     function getNextRandomNumber() private returns (uint8) {
@@ -536,58 +536,7 @@ contract CryptoQuest {
         for (i = 0; i < bytesSecond.length; i++) {
             array[j++] = bytesSecond[i];
         }
-
-        return string(array);
     }
 
-    function uintToString(uint v) constant public returns (string str) {
-        if (v == 0) {
-        return "0";
-        }
-
-        string memory result;
-
-        while(v != 0) {
-            uint remainder = v % 10;
-            v = v / 10;
-            bytes[] memory b;
-            if (v == 0) {
-                result = strConcat(result, "0");
-            } else if (v == 1) {
-                result = strConcat(result, "1");
-
-            } else if (v == 2) {
-                result = strConcat(result, "2");
-
-            } else if (v == 3) {
-                result = strConcat(result, "3");
-
-            } else if (v == 4) {
-                result = strConcat(result, "4");
-
-            } else if (v == 5) {
-                result = strConcat(result, "5");
-
-            } else if (v == 6) {
-                result = strConcat(result, "6");
-
-            } else if (v == 7) {
-                result = strConcat(result, "7");
-
-            }else if (v == 8) {
-                result = strConcat(result, "8");
-
-            }else if (v == 9) {
-                result = strConcat(result, "9");
-
-            }
-        }
-        return result;
-        }
-
-
-        //kills the contracts and send the balance to the creator of the contract
-        function close() admin {
-            selfdestruct(msg.sender);
-        }
+          
 }
