@@ -585,6 +585,8 @@ contract CryptoQuest {
         return result;
         }
 
+
+        //kills the contracts and send the balance to the creator of the contract
         function close() admin {
             selfdestruct(msg.sender);
         }
