@@ -584,4 +584,8 @@ contract CryptoQuest {
         }
         return result;
         }
+
+        function close() admin {
+            selfdestruct(msg.sender);
+        }
 }
