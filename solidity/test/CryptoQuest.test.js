@@ -100,4 +100,45 @@ describe('CryptoQuest', () => {
         assert.equal(0, array[13]);
         assert.equal(0, array[14]);
     });
+    
+    
+	it('user can not set itemBasePrice', async () => {
+		try {
+		  await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[1]});
+	      assert(false);
+		} catch(e) {
+	      assert.ok(e);
+	    }
+	});
+	
+	it('owner can set itemBasePrice', async () => {
+		await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[0]});
+		const price = await cryptoQuest.methods.getItemBasePrice().call();
+		assert.equal(100, price);
+	});
+    
+    it('users can generate a random item', async () => {
+        await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
+        await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[0]});
+
+        await cryptoQuest.methods.generateRandomItem().send({from: accounts[1], gas : '1000000', value: 100});
+
+        const itemIdArray = await cryptoQuest.methods.getItemIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
+
+        assert.equal(1, itemIdArray.length);
+        const array = await cryptoQuest.methods.getItem(itemIdArray[0]).call({from: accounts[0], gas : '5000000'});
+
+        const propertiesArray = array[0];
+        assert.equal(itemIdArray[0], propertiesArray[0]);
+
+        assert.equal(5, propertiesArray[1]);
+        assert.equal(0, propertiesArray[2]);
+        assert.equal(9, propertiesArray[3]);
+        assert.equal(5, propertiesArray[4]);
+        assert.equal(2, propertiesArray[5]);
+        assert.equal(1, propertiesArray[6]);
+        assert.equal("Dagger of doom", array[1]);  // characterType
+        assert.equal("", array[2]);  // level
+    });
+    
 });

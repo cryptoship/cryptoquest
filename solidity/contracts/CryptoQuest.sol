@@ -18,6 +18,7 @@ contract CryptoQuest {
     uint lastRandonNumberIndex;
     
     uint private characterBasePrice;
+    uint private itemBasePrice;
 
     uint8 ITEM_SLOT_HEAD = 0;
     uint8 ITEM_SLOT_NECK = 1;
@@ -51,11 +52,11 @@ contract CryptoQuest {
     }
 
     struct Item {
-        uint256 tokenId;
-
-        uint8 slot;
-        string description;
         string name;
+        string description;
+
+        uint256 tokenId;
+        uint8 slot;
         uint8 armor;
         uint8 damage;
         uint8 attackSpeed;
@@ -213,46 +214,30 @@ contract CryptoQuest {
 
 
     function generateRandomItem() public payable {
-      require(msg.value >= characterBasePrice);
+      require(msg.value >= itemBasePrice);
 
+      Item memory item = startItems[getNextRandomNumber() % startItems.length];
+      item.tokenId = lastTokenId++;
 
-    }
+      item.armor = item.armor + getNextRandomNumber() % 3;
+      item.damage = item.damage + getNextRandomNumber() % 5;
+      item.attackSpeed = item.attackSpeed + getNextRandomNumber() % 3;
+      item.evasion = item.evasion + getNextRandomNumber() % 3;
+      item.blockChance = item.blockChance + getNextRandomNumber() % 3;
 
-
-    function generateItem(uint8 slot,
-                              string descripton,
-                              uint8 armor,
-                              uint8 damage,
-                              uint8 attackSpeed,
-                              uint8 evasion,
-    						  uint8 blockChance) public admin {
-            generateItemForOwner(slot, descripton, armor, damage, attackSpeed, evasion, blockChance, owner);
-        }
-
-    function generateItemForOwner(uint8 slot,
-                          string descripton,
-                          uint8 armor,
-                          uint8 damage,
-                          uint8 attackSpeed,
-                          uint8 evasion,
-						  uint8 blockChance,
-						  address newOwner) private {
-        Item memory item;
-        item.tokenId = lastTokenId++;
-        // set item data
-		item.slot = slot;
-		item.description = descripton;
-		item.armor = armor;
-		item.damage = damage;
-		item.attackSpeed = attackSpeed;
-		item.evasion = evasion;
-		item.blockChance = blockChance;
-        
-        ownerByTokenId[item.tokenId] = newOwner;
-        itemsByTokenId[item.tokenId] = item;
-        itemsByAddress[newOwner].push(item.tokenId);
+      ownerByTokenId[item.tokenId] = msg.sender;
+      itemsByTokenId[item.tokenId] = item;
+      itemsByAddress[msg.sender].push(item.tokenId);
     }
     
+    function setItemBasePrice(uint basePrice) public admin {
+      itemBasePrice = basePrice;
+    }
+
+    function getItemBasePrice() public admin returns (uint) {
+      return itemBasePrice;
+    }
+
     function setCharacterBasePrice(uint basePrice) public admin {
       characterBasePrice = basePrice;
     }
@@ -492,8 +477,12 @@ contract CryptoQuest {
         require(false);
     }
 
-    function getCharacterIdsByAddress(address a) public admin returns (uint[]){
+    function getCharacterIdsByAddress(address a) public returns (uint[]){
       return charactersByAddress[a];
+    }
+    
+    function getItemIdsByAddress(address a) public returns (uint[]){
+      return itemsByAddress[a];
     }
 
     function getCharacter(uint characterId) public view returns (uint[15]) {
@@ -521,6 +510,21 @@ contract CryptoQuest {
         array[14] = c.items[5];
 
         return array;
+    }
+    
+    function getItem(uint itemId) public view returns (uint[7], string, string) {        
+        Item memory i = itemsByTokenId[itemId];
+        require(i.tokenId != 0);
+        uint[7] memory array;
+        array[0] = i.tokenId;
+        array[1] = i.slot;
+        array[2] = i.armor;
+        array[3] = i.damage;
+        array[4] = i.attackSpeed;
+        array[5] = i.evasion;
+        array[6] = i.blockChance;
+        
+        return (array, i.name, i.description);
     }
 
 
