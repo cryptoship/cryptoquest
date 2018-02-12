@@ -27,6 +27,7 @@ contract CryptoQuest {
     uint8 ITEM_SLOT_LEFT_HAND = 4;
     uint8 ITEM_SLOT_RIGHT_HAND = 5;
 
+    //character types
     uint8 CHARACTER_TYPE_HUMAN = 0;
     uint8 CHARACTER_TYPE_ORC = 1;
     uint8 CHARACTER_TYPE_ELF = 2;
@@ -55,6 +56,7 @@ contract CryptoQuest {
         string name;
         string description;
 
+        //change to equippedCharacterId
         uint onCharacterId;
 
         uint256 tokenId;
@@ -70,7 +72,8 @@ contract CryptoQuest {
 
     struct Dungeon {
         uint8 dungeonId;
-
+        // Should description live in the contract or be a
+        // const outside of the contract
         string description;
 
         uint8 damage;
@@ -79,8 +82,14 @@ contract CryptoQuest {
 
     function CryptoQuest() public {
         owner = msg.sender;
+
+        //is this why we were having the zero mapping error? @dankurka
         lastTokenId = 1;
 
+
+        //shouldnt token ids be set by the lastTokenId prop?
+        // We should use a function that ads an item and increments the
+        // lastTokenId
         startItems.push(
             Item({
                 tokenId: 0,
@@ -199,12 +208,13 @@ contract CryptoQuest {
              continue;
            }
            require (ownerByTokenId[itemId] == msg.sender);
-           Item storage item = itemsByTokenId[oldItemId];
+           Item storage item = itemsByTokenId[itemId];
            item.onCharacterId = characterId;
            character.items[i] = itemId;
         }
     }
 
+    //pass the whole item array to this just like equip, uint[6] itemIds
     function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
         //equip(characterId, headItem, rightHandItem);
         require(msg.sender == ownerByTokenId[characterId]);
@@ -233,7 +243,81 @@ contract CryptoQuest {
         }
 
     }
+    
+    
+    function goIntoDungeonV2(uint characterId, uint[6] itemIds, uint dungeonId) public {
+        
+        require(msg.sender == ownerByTokenId[characterId]);
 
+        //get char
+        Character memory character = characterByTokenId[characterId];
+
+        //get totals
+        uint8 totalArmor;
+        uint8 totalDamage;
+
+        for (uint8 i = 0; i < itemIds.length; i++) {
+           uint itemId = itemIds[i];
+           if (itemId == 0) {
+             continue;
+           }
+           require (ownerByTokenId[itemId] == msg.sender);
+           Item memory item = itemsByTokenId[itemId];
+           item.armor += totalArmor;
+           item.damage += totalDamage;          
+        }
+
+       //get dungeon
+       //dungeons[dungeonId]
+       //check if damage and armor are greater
+
+       Dungeon memory dungeon = Dungeon({
+                dungeonId: 34,
+                description : "",
+                damage: 2,
+                health : 2
+            });
+
+        if (totalArmor > dungeon.health && totalDamage > dungeon.damage) {
+            
+            generateRandomItem();
+
+            //newItem.tokenId = lastTokenId++;
+            //ownerByTokenId[newItem.tokenId] = msg.sender;
+            //itemsByTokenId[newItem.tokenId] = newItem;
+            // newItem.type = ...;
+        } else {
+            // choose an item and destroy it
+           
+
+            for ( i = 0; i < itemIds.length; i++) {
+            itemId = itemIds[i];
+            if (itemId == 0) {
+                continue;
+            }
+            require (ownerByTokenId[itemId] == msg.sender);
+            Item storage loseItem = itemsByTokenId[itemId];            
+            loseItem.onCharacterId = 0;
+            character.items[i] = 0;
+            
+            
+                // remove from owners
+            owner = ownerByTokenId[itemId];
+
+            // remove from Character
+            // itemsByAddress[msg.sender];
+            break;
+        }
+
+            //uint tokenId = item.tokenId;
+
+            
+        
+        }
+
+    }
+
+    // kill this?
     function loadItems(Character character) private view returns (Item[]) {
         require(character.items.length < 256);
         Item[] memory items;
@@ -247,6 +331,7 @@ contract CryptoQuest {
         require(msg.sender == owner);
         _;
     }
+
 
 
     function generateRandomItem() public payable {
@@ -525,6 +610,8 @@ contract CryptoQuest {
 
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
+        // Why do we need to do things like this as an array?
+        // Are we sure there isn't a better way?
         uint[15] memory array;
         array[0] = c.tokenId;
         array[1] = c.characterType;
