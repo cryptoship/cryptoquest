@@ -54,6 +54,8 @@ contract CryptoQuest {
     struct Item {
         string name;
         string description;
+        
+        uint onCharacterId;
 
         uint256 tokenId;
         uint8 slot;
@@ -89,7 +91,8 @@ contract CryptoQuest {
                 damage: 9,
                 attackSpeed: 5,
                 evasion : 2,
-                blockChance : 1
+                blockChance : 1,
+                onCharacterId : 0
             }));
 
         startItems.push(
@@ -102,7 +105,8 @@ contract CryptoQuest {
                 damage: 10,
                 attackSpeed: 2,
                 evasion : 0,
-                blockChance : 4
+                blockChance : 4,
+                onCharacterId : 0
             }));
 
         startItems.push(
@@ -115,7 +119,8 @@ contract CryptoQuest {
                 damage: 1,
                 attackSpeed: 5,
                 evasion : 0,
-                blockChance : 0
+                blockChance : 0,
+                onCharacterId : 0
             }));
 
         startItems.push(
@@ -128,7 +133,8 @@ contract CryptoQuest {
                 damage: 0,
                 attackSpeed: 0,
                 evasion : 3,
-                blockChance : 1
+                blockChance : 1,
+                onCharacterId : 0
             }));
 
         startItems.push(
@@ -141,7 +147,8 @@ contract CryptoQuest {
                 damage: 0,
                 attackSpeed: 0,
                 evasion : 3,
-                blockChance : 1
+                blockChance : 1,
+                onCharacterId : 0
             }));
 
         startItems.push(
@@ -154,23 +161,29 @@ contract CryptoQuest {
                 damage: 0,
                 attackSpeed: 0,
                 evasion : 1,
-                blockChance : 0
+                blockChance : 0,
+                onCharacterId : 0
             }));
     }
 
 
-    function equip(uint characterId, uint headItem, uint rightHandItem) public {
+    function equip(uint characterId, uint[6] itemIds) public {
         require(msg.sender == ownerByTokenId[characterId]);
-        require(msg.sender == ownerByTokenId[headItem]);
+        
+        /*if (headItem != 0) {
+          require(msg.sender == ownerByTokenId[headItem]);
+        }
+        
+        
         require(msg.sender == ownerByTokenId[rightHandItem]);
 
         Character storage character = characterByTokenId[characterId];
         character.items[ITEM_SLOT_HEAD] = headItem;
-        character.items[ITEM_SLOT_RIGHT_HAND] = rightHandItem;
+        character.items[ITEM_SLOT_RIGHT_HAND] = rightHandItem;*/
     }
 
     function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
-        equip(characterId, headItem, rightHandItem);
+        //equip(characterId, headItem, rightHandItem);
         require(msg.sender == ownerByTokenId[characterId]);
 
         // is this actually a Character
