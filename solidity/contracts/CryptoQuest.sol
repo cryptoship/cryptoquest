@@ -1,22 +1,22 @@
 pragma solidity ^0.4.19;
 
 contract CryptoQuest {
-    
+
     address public owner;
 
     mapping(uint => address) ownerByTokenId;
     mapping(uint => Character) characterByTokenId;
     mapping(uint => Item) itemsByTokenId;
     uint lastTokenId;
-    
+
     mapping(address => uint[]) charactersByAddress;
     mapping(address => uint[]) itemsByAddress;
-    
+
     Dungeon[] dungeons;
 
     uint8[] randomNumbers = [0,0,0,0];
     uint lastRandonNumberIndex;
-    
+
     uint private characterBasePrice;
     uint private itemBasePrice;
 
@@ -54,7 +54,7 @@ contract CryptoQuest {
     struct Item {
         string name;
         string description;
-        
+
         uint onCharacterId;
 
         uint256 tokenId;
@@ -166,20 +166,43 @@ contract CryptoQuest {
             }));
     }
 
-
+    //equip character with items
     function equip(uint characterId, uint[6] itemIds) public {
         require(msg.sender == ownerByTokenId[characterId]);
-        
-        /*if (headItem != 0) {
-          require(msg.sender == ownerByTokenId[headItem]);
-        }
-        
-        
-        require(msg.sender == ownerByTokenId[rightHandItem]);
 
+        //load char
         Character storage character = characterByTokenId[characterId];
-        character.items[ITEM_SLOT_HEAD] = headItem;
-        character.items[ITEM_SLOT_RIGHT_HAND] = rightHandItem;*/
+
+        //get the items the character is currently wearing
+        uint[6] memory oldItems = character.items;
+
+        //remove all items
+        for (uint8 i = 0; i < 6; i++) {
+          character.items[i] = 0;
+        }
+
+        //update all old items to not be worn (onCharacterId = 0)
+        for (i = 0; i < 6; i++) {
+          uint oldItemId = oldItems[i];
+          if (oldItemId == 0) {
+            continue;
+          }
+          Item storage oldItem = itemsByTokenId[oldItemId];
+          oldItem.onCharacterId = 0;
+        }
+
+
+        //check to see if they own item, then load item and set it on that item, go to item and link it to character
+        for (i = 0; i < itemIds.length; i++) {
+           uint itemId = itemIds[i];
+           if (itemId == 0) {
+             continue;
+           }
+           require (ownerByTokenId[itemId] == msg.sender);
+           Item storage item = itemsByTokenId[oldItemId];
+           item.onCharacterId = characterId;
+           character.items[i] = itemId;
+        }
     }
 
     function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
@@ -242,7 +265,7 @@ contract CryptoQuest {
       itemsByTokenId[item.tokenId] = item;
       itemsByAddress[msg.sender].push(item.tokenId);
     }
-    
+
     function setItemBasePrice(uint basePrice) public admin {
       itemBasePrice = basePrice;
     }
@@ -254,20 +277,20 @@ contract CryptoQuest {
     function setCharacterBasePrice(uint basePrice) public admin {
       characterBasePrice = basePrice;
     }
-    
+
     function getCharacterBasePrice() public admin returns (uint) {
       return characterBasePrice;
     }
-    
+
     function setRandomNumbers(uint8[] numbers) public admin {
       randomNumbers = numbers;
       lastRandonNumberIndex = 0;
     }
-    
+
     function getRandomNumbers() public admin returns (uint8[]) {
         return randomNumbers;
     }
-    
+
     function generateRandomCharacter(uint8 characterType) public payable {
         require(msg.value >= characterBasePrice);
         require(characterType <= CHARACTER_TYPE_PANDA);
@@ -337,135 +360,135 @@ contract CryptoQuest {
 
 
     }
-    
+
     function getTotalItemsForSale() public view returns (uint) {
         return getTotalItemsForOwner(owner);
     }
-    
+
     function getTotalCharactersForSale() public view returns (uint) {
         return getTotalCharactersForOwner(owner);
     }
-    
+
     function getItemsForSale(uint from, uint to) public view returns (Item[]) {
         return getItems(from, to, owner);
     }
-    
+
     function getCharactersForSale(uint from, uint to) public view returns (Character[]) {
         return getCharacters(from, to, owner);
     }
-    
-    
+
+
     function getMyTotalCharacterCount() public view returns (uint) {
         return getTotalCharactersForOwner(msg.sender);
     }
-    
+
     function getMyTotalItemCount() public view returns (uint) {
         return getTotalItemsForOwner(msg.sender);
     }
-    
+
     function getMyCharacters(uint from, uint to) public view returns (Character[]){
         return getCharacters(from, to, msg.sender);
     }
-    
+
     function getMyItems(uint from, uint to) public view returns (Item[]){
         return getItems(from, to, msg.sender);
     }
-    
-    
+
+
     function getTotalItemsForOwner(address owningAddress) private view returns (uint) {
         return itemsByAddress[owningAddress].length;
     }
-    
+
     function getTotalCharactersForOwner(address owningAddress) private view returns (uint) {
         return charactersByAddress[owningAddress].length;
     }
-    
+
     function getItems(uint from, uint to, address owningAddress) private view returns (Item[]) {
         uint[] memory itemIds = itemsByAddress[owningAddress];
         require(from < to);
         require(to <= itemIds.length);
-        
+
         Item[] memory items;
         for (uint i = 0; i < to-from; i++) {
             uint tokenId = itemIds[i + from];
             items[i] = itemsByTokenId[tokenId];
         }
-        
+
         return items;
     }
-    
+
     function getCharacters(uint from, uint to, address owningAddress) private view returns (Character[]) {
         uint[] memory characterIds = charactersByAddress[owningAddress];
         require(from < to);
         require(to <= characterIds.length);
-        
+
         Character[] memory characters;
-        
+
         for (uint i = 0; i < to-from; i++) {
             uint tokenId = characterIds[i + from];
             characters[i] = characterByTokenId[tokenId];
         }
-        
+
         return characters;
     }
-    
+
     function buyItem(uint itemId) public payable {
         // is the item for sale?
-        require(ownerByTokenId[itemId] == owner);        
-        
-        // validate money here (e.g. enough)        
+        require(ownerByTokenId[itemId] == owner);
+
+        // validate money here (e.g. enough)
         transferItem(owner, msg.sender, itemId);
     }
-    
-    
-    
+
+
+
     function transferItem(address from, address to, uint itemId) private {
         require(ownerByTokenId[itemId] == from);
-        
+
         ownerByTokenId[itemId] = to;
         itemsByAddress[to].push(itemId);
-        
+
         uint[] memory tokenIds = itemsByAddress[from];
         uint index = findValueInArray(tokenIds, itemId);
-        
+
         uint[] memory newTokenIds = removeFromArray(tokenIds, index);
         itemsByAddress[from] = newTokenIds;
     }
-    
+
     function buyCharacter(uint characterId) public payable {
         // is the item for sale?
         require(ownerByTokenId[characterId] == owner);
-        
+
         // validate money here (e.g. enough)
-        
+
         transferCharacter(owner, msg.sender, characterId);
     }
-    
+
     //transfers character from one address to another
     //@params the id of charater
     function transferCharacter(address from, address to, uint characterId) private {
         //check if owner of charater
         require(ownerByTokenId[characterId] == from);
-        
+
         //change the owner to the to address
         ownerByTokenId[characterId] = to;
-        
-        //add this to the to's character array 
+
+        //add this to the to's character array
         charactersByAddress[to].push(characterId);
-        
+
         //get the array from owns
         uint[] memory tokenIds = charactersByAddress[from];
-        
+
         //find that character's index
         uint index = findValueInArray(tokenIds, characterId);
-        
+
         //get back an array after this index(character) has been removed
         uint[] memory newTokenIds = removeFromArray(tokenIds, index);
-        
-        //set the new array 
+
+        //set the new array
         charactersByAddress[from] = newTokenIds;
     }
-    
+
     function removeFromArray(uint[] array, uint index)  private pure returns(uint[]) {
         require(index < array.length);
         uint[] memory newArray;
@@ -480,7 +503,7 @@ contract CryptoQuest {
         }
         return newArray;
     }
-    
+
     function findValueInArray(uint[] array, uint value)  private pure returns(uint) {
         for (uint i = 0; i <array.length; i++){
             if (array[i] == value) {
@@ -493,13 +516,13 @@ contract CryptoQuest {
     function getCharacterIdsByAddress(address a) public returns (uint[]){
       return charactersByAddress[a];
     }
-    
+
     function getItemIdsByAddress(address a) public returns (uint[]){
       return itemsByAddress[a];
     }
 
     function getCharacter(uint characterId) public view returns (uint[15]) {
-        
+
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
         uint[15] memory array;
@@ -524,8 +547,8 @@ contract CryptoQuest {
 
         return array;
     }
-    
-    function getItem(uint itemId) public view returns (uint[7], string, string) {        
+
+    function getItem(uint itemId) public view returns (uint[7], string, string) {
         Item memory i = itemsByTokenId[itemId];
         require(i.tokenId != 0);
         uint[7] memory array;
@@ -536,7 +559,7 @@ contract CryptoQuest {
         array[4] = i.attackSpeed;
         array[5] = i.evasion;
         array[6] = i.blockChance;
-        
+
         return (array, i.name, i.description);
     }
 
@@ -557,5 +580,5 @@ contract CryptoQuest {
         }
     }
 
-          
+
 }
