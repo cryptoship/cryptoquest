@@ -289,30 +289,13 @@ contract CryptoQuest {
                     continue;
                 }
 
-                loseYoSheet(characterId, itemId, i);
-
-                // remove from Character
-                // itemsByAddress[msg.sender];
-                break;
+                transferItem(msg.sender, owner, itemId);
+                break; //break so we only transfer one item
             }
             //uint tokenId = item.tokenId;
         }
 
     }
-
-    function loseYoSheet(uint8 characterId, uint itemId, uint8 itemOnCharacterIndex) private {
-      require(msg.sender == ownerByTokenId[characterId]);
-      require(msg.sender == ownerByTokenId[itemId]);
-      Character memory character = characterByTokenId[characterId];
-      Item storage loseItem = itemsByTokenId[itemId];
-
-      loseItem.onCharacterId = 0;
-      character.items[itemOnCharacterIndex] = 0;
-
-      // remove from player and set token owner to us
-      ownerByTokenId[itemId] = owner;
-    }
-
     // kill this?
     function loadItems(Character character) private view returns (Item[]) {
         require(character.items.length < 256);
@@ -517,6 +500,7 @@ contract CryptoQuest {
 
     function transferItem(address from, address to, uint itemId) private {
         require(ownerByTokenId[itemId] == from);
+        require(from != to);
 
         ownerByTokenId[itemId] = to;
         itemsByAddress[to].push(itemId);
