@@ -176,7 +176,7 @@ describe('CryptoQuest', () => {
         assert.equal("", array[2]);  // level
     });
 
-	it.only('equips an item to a character', async () => {
+	it('equips an item to a character', async () => {
 		//generate an item
 		await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
 		await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[0]});
