@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.20;
 
 contract CryptoQuest {
 
@@ -136,9 +136,9 @@ contract CryptoQuest {
             Item({
                 tokenId: 0,
                 slot: ITEM_SLOT_FEET,
-                name: "basic boots",
+                name: "nice boots",
                 description : "",
-                armor : 6,
+                armor : 7,
                 damage: 0,
                 attackSpeed: 0,
                 evasion : 3,
@@ -173,6 +173,7 @@ contract CryptoQuest {
                 blockChance : 0,
                 onCharacterId : 0
             }));
+            //also create a startDungeons init
     }
 
     //equip character with items
@@ -214,47 +215,47 @@ contract CryptoQuest {
         }
     }
 
-    //pass the whole item array to this just like equip, uint[6] itemIds
-    function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
-        //equip(characterId, headItem, rightHandItem);
-        require(msg.sender == ownerByTokenId[characterId]);
+    // //pass the whole item array to this just like equip, uint[6] itemIds
+    // function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
+    //     //equip(characterId, headItem, rightHandItem);
+    //     require(msg.sender == ownerByTokenId[characterId]);
 
-        // is this actually a Character
+    //     // is this actually a Character
 
-        Character memory character = characterByTokenId[characterId];
+    //     Character memory character = characterByTokenId[characterId];
 
-        Item[] memory items = loadItems(character);
+    //     Item[] memory items = loadItems(character);
 
-        // throw the dice
+    //     // throw the dice
 
-        if (true) {
-            Item newItem;
-            //newItem.tokenId = lastTokenId++;
-            //ownerByTokenId[newItem.tokenId] = msg.sender;
-            //itemsByTokenId[newItem.tokenId] = newItem;
-            // newItem.type = ...;
-        } else {
-            // choose an item and destroy it
-            Item memory item = items[0];
-            //uint tokenId = item.tokenId;
+    //     if (true) {
+    //         Item newItem;
+    //         //newItem.tokenId = lastTokenId++;
+    //         //ownerByTokenId[newItem.tokenId] = msg.sender;
+    //         //itemsByTokenId[newItem.tokenId] = newItem;
+    //         // newItem.type = ...;
+    //     } else {
+    //         // choose an item and destroy it
+    //         Item memory item = items[0];
+    //         //uint tokenId = item.tokenId;
 
-            // remove from Character
-            // remove from owners
-        }
+    //         // remove from Character
+    //         // remove from owners
+    //     }
 
-    }
-    
-    
-    function goIntoDungeonV2(uint characterId, uint[6] itemIds, uint dungeonId) public {
-        
+    // }
+
+
+    function goIntoDungeonV2(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
+
         require(msg.sender == ownerByTokenId[characterId]);
 
         //get char
         Character memory character = characterByTokenId[characterId];
 
         //get totals
-        uint8 totalArmor;
-        uint8 totalDamage;
+        uint8 totalArmor = 0;
+        uint8 totalDamage = 0;
 
         for (uint8 i = 0; i < itemIds.length; i++) {
            uint itemId = itemIds[i];
@@ -263,58 +264,53 @@ contract CryptoQuest {
            }
            require (ownerByTokenId[itemId] == msg.sender);
            Item memory item = itemsByTokenId[itemId];
-           item.armor += totalArmor;
-           item.damage += totalDamage;          
+           totalArmor += item.armor;
+           totalDamage += item.damage;
         }
 
        //get dungeon
        //dungeons[dungeonId]
        //check if damage and armor are greater
 
-       Dungeon memory dungeon = Dungeon({
-                dungeonId: 34,
-                description : "",
-                damage: 2,
-                health : 2
-            });
+        Dungeon memory dungeon = Dungeon({
+            dungeonId: 34,
+            description : "",
+            damage: 2,
+            health : 2
+        });
 
         if (totalArmor > dungeon.health && totalDamage > dungeon.damage) {
-            
             generateRandomItem();
-
-            //newItem.tokenId = lastTokenId++;
-            //ownerByTokenId[newItem.tokenId] = msg.sender;
-            //itemsByTokenId[newItem.tokenId] = newItem;
-            // newItem.type = ...;
         } else {
             // choose an item and destroy it
-           
-
             for ( i = 0; i < itemIds.length; i++) {
-            itemId = itemIds[i];
-            if (itemId == 0) {
-                continue;
+                itemId = itemIds[i];
+                if (itemId == 0) {
+                    continue;
+                }
+
+                loseYoSheet(characterId, itemId, i);
+
+                // remove from Character
+                // itemsByAddress[msg.sender];
+                break;
             }
-            require (ownerByTokenId[itemId] == msg.sender);
-            Item storage loseItem = itemsByTokenId[itemId];            
-            loseItem.onCharacterId = 0;
-            character.items[i] = 0;
-            
-            
-                // remove from owners
-            owner = ownerByTokenId[itemId];
-
-            // remove from Character
-            // itemsByAddress[msg.sender];
-            break;
-        }
-
             //uint tokenId = item.tokenId;
-
-            
-        
         }
 
+    }
+
+    function loseYoSheet(uint8 characterId, uint itemId, uint8 itemOnCharacterIndex) private {
+      require(msg.sender == ownerByTokenId[characterId]);
+      require(msg.sender == ownerByTokenId[itemId]);
+      Character memory character = characterByTokenId[characterId];
+      Item storage loseItem = itemsByTokenId[itemId];
+
+      loseItem.onCharacterId = 0;
+      character.items[itemOnCharacterIndex] = 0;
+
+      // remove from player and set token owner to us
+      ownerByTokenId[itemId] = owner;
     }
 
     // kill this?
@@ -331,8 +327,6 @@ contract CryptoQuest {
         require(msg.sender == owner);
         _;
     }
-
-
 
     function generateRandomItem() public payable {
       require(msg.value >= itemBasePrice);
@@ -437,13 +431,9 @@ contract CryptoQuest {
         character.level = level;
         character.tokenId = lastTokenId++;
 
-
         ownerByTokenId[character.tokenId] = newOwner;
         characterByTokenId[character.tokenId] = character;
         charactersByAddress[newOwner].push(character.tokenId);
-
-
-
     }
 
     function getTotalItemsForSale() public view returns (uint) {
@@ -525,8 +515,6 @@ contract CryptoQuest {
         transferItem(owner, msg.sender, itemId);
     }
 
-
-
     function transferItem(address from, address to, uint itemId) private {
         require(ownerByTokenId[itemId] == from);
 
@@ -590,7 +578,7 @@ contract CryptoQuest {
     }
 
     function findValueInArray(uint[] array, uint value)  private pure returns(uint) {
-        for (uint i = 0; i <array.length; i++){
+        for (uint i = 0; i < array.length; i++) {
             if (array[i] == value) {
                 return i;
             }
@@ -650,7 +638,6 @@ contract CryptoQuest {
         return (array, i.name, i.description);
     }
 
-
     function strConcat(string first, string second) private returns (string) {
         bytes memory bytesFirst = bytes(first);
         bytes memory bytesSecond = bytes(second);
@@ -666,6 +653,4 @@ contract CryptoQuest {
             array[j++] = bytesSecond[i];
         }
     }
-
-
 }
