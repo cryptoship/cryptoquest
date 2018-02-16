@@ -47,9 +47,9 @@ contract CryptoQuest {
         uint8 intelligence;
         uint8 wisdom;
         uint8 charisma;
-
         // items the Character is wearing
         uint[6] items;
+        string name;
     }
 
     struct Item {
@@ -353,7 +353,7 @@ contract CryptoQuest {
         return randomNumbers;
     }
 
-    function generateRandomCharacter(uint8 characterType) public payable {
+    function generateRandomCharacter(uint8 characterType, string name) public payable {
         require(msg.value >= characterBasePrice);
         require(characterType <= CHARACTER_TYPE_PANDA);
 
@@ -366,6 +366,7 @@ contract CryptoQuest {
         getRandomAttribute(),
         /* level */ 1,
         characterType,
+        name,
         msg.sender);
     }
 
@@ -382,17 +383,6 @@ contract CryptoQuest {
         return randomNumbers[lastRandonNumberIndex];
     }
 
-    function generateCharacter(uint8 health,
-                               uint8 strength,
-                               uint8 dexterity,
-                               uint8 intelligence,
-                               uint8 wisdom,
-                               uint8 charisma,
-							   uint8 level,
-							   uint8 characterType) public admin {
-        generateCharacterForOwner(health, strength, dexterity, intelligence, wisdom, charisma, level, characterType, owner);
-    }
-
     function generateCharacterForOwner(uint8 health,
                                         uint8 strength,
                                         uint8 dexterity,
@@ -401,6 +391,7 @@ contract CryptoQuest {
                                         uint8 charisma,
                                         uint8 level,
                                         uint8 characterType,
+                                        string name,
                                         address newOwner) private {
 
         Character memory character;
@@ -412,6 +403,7 @@ contract CryptoQuest {
         character.wisdom = wisdom;
         character.charisma = charisma;
         character.level = level;
+        character.name = name;
         character.tokenId = lastTokenId++;
 
         ownerByTokenId[character.tokenId] = newOwner;
@@ -578,7 +570,7 @@ contract CryptoQuest {
       return itemsByAddress[a];
     }
 
-    function getCharacter(uint characterId) public view returns (uint[15]) {
+    function getCharacter(uint characterId) public view returns (uint[15], string) {
 
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
@@ -604,7 +596,7 @@ contract CryptoQuest {
         array[13] = c.items[4];
         array[14] = c.items[5];
 
-        return array;
+        return (array, c.name);
     }
 
     function getItem(uint itemId) public view returns (uint[7], string, string) {

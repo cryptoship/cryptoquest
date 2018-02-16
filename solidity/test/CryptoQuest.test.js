@@ -25,22 +25,22 @@ class Item {
 }
 
 class Character {
-	constructor(array) {
-		if(array.length !== 15) {
-			throw new Error(`array length should be 14. Instead it's ${array.length}`)
+	constructor(data) {
+		const props = data[0]
+		if(props.length !== 15) {
+			throw new Error(`array length should be 15. Instead it's ${props.length}`);
 		}
-		const itemIds = array.slice(9)
-
-		this.tokenId = array[0];
-		this.characterType = array[1];
-		this.level = array[2];
-		this.health = array[3];
-		this.strength = array[4];
-		this.dexterity = array[5];
-		this.intelligence = array[6];
-		this.wisdom = array[7];
-		this.charisma = array[8];
-		this.itemIds = itemIds
+		this.name = data[1]
+		this.tokenId = props[0];
+		this.characterType = props[1];
+		this.level = props[2];
+		this.health = props[3];
+		this.strength = props[4];
+		this.dexterity = props[5];
+		this.intelligence = props[6];
+		this.wisdom = props[7];
+		this.charisma = props[8];
+		this.itemIds = props.slice(9);
 	}
 }
 
@@ -108,32 +108,29 @@ describe('CryptoQuest', () => {
         await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
         await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
 
-        await cryptoQuest.methods.generateRandomCharacter(0).send({from: accounts[1], gas : '1000000', value: 100});
+        await cryptoQuest.methods.generateRandomCharacter(0, 'Derek').send({from: accounts[1], gas : '1000000', value: 100});
 
         const charIdArray = await cryptoQuest.methods.getCharacterIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
 
         assert.equal(1, charIdArray.length);
-        const array = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
+        const data = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
 
-        assert.equal(1, array[0]);  // tokenId
-        assert.equal(0, array[1]);  // characterType
-        assert.equal(1, array[2]);  // level
+				const character = new Character(data);
 
-        assert.equal(5, array[3]);
-        assert.equal(5, array[4]);
-        assert.equal(5, array[5]);
+        assert.equal(1, character.tokenId);  // tokenId
+        assert.equal(0, character.characterType);  // characterType
+        assert.equal(1, character.level);  // level
 
-        assert.equal(5, array[6]);
-        assert.equal(5, array[7]);
-        assert.equal(5, array[8]);
+        assert.equal(5, character.health);
+        assert.equal(5, character.strength);
+        assert.equal(5, character.dexterity);
 
-        assert.equal(0, array[9]);
-        assert.equal(0, array[10]);
-        assert.equal(0, array[11]);
+        assert.equal(5, character.intelligence);
+        assert.equal(5, character.wisdom);
+        assert.equal(5, character.charisma);
 
-        assert.equal(0, array[12]);
-        assert.equal(0, array[13]);
-        assert.equal(0, array[14]);
+				assert.deepEqual([0,0,0,0,0,0], character.itemIds)
+				assert.equal('Derek', character.name)
     });
 
 
@@ -188,19 +185,19 @@ describe('CryptoQuest', () => {
 
 		//generate a character
 		await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
-		await cryptoQuest.methods.generateRandomCharacter(0).send({from: accounts[1], gas : '1000000', value: 100});
+		await cryptoQuest.methods.generateRandomCharacter(0, 'Derek').send({from: accounts[1], gas : '1000000', value: 100});
 		const charIdArray = await cryptoQuest.methods.getCharacterIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
 		assert.equal(1, charIdArray.length);
-		const character = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
+		const characterData = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
 		// character should have a name ???
-		const characterProperties = new Character(character)
+		const character = new Character(characterData)
 
-		await cryptoQuest.methods.equip(characterProperties.tokenId, [generatedItemId,0,0,0,0,0]).send({from: accounts[1], gas : '1000000'});
+		await cryptoQuest.methods.equip(character.tokenId, [generatedItemId,0,0,0,0,0]).send({from: accounts[1], gas : '1000000'});
 
-		const updatedCharacter = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
-		const updatedCharacterProperties = new Character(updatedCharacter)
+		const updatedCharacterData = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
+		const updatedCharacter = new Character(updatedCharacterData)
 
-		assert.deepEqual([generatedItemId,0,0,0,0,0], updatedCharacterProperties.itemIds)
+		assert.deepEqual([generatedItemId,0,0,0,0,0], updatedCharacter.itemIds)
 	})
 
 });
