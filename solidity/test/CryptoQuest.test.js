@@ -104,35 +104,34 @@ describe('CryptoQuest', () => {
 		assert.deepEqual([1,2,3], numbers);
 	});
 
-    it('users can generate a random character', async () => {
-        await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
-        await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
+  it('users can generate a random character', async () => {
+      await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
+      await cryptoQuest.methods.setCharacterBasePrice(100).send({from: accounts[0]});
 
-        await cryptoQuest.methods.generateRandomCharacter(0, 'Derek').send({from: accounts[1], gas : '1000000', value: 100});
+      await cryptoQuest.methods.generateRandomCharacter(0, 'Derek').send({from: accounts[1], gas : '1000000', value: 100});
 
-        const charIdArray = await cryptoQuest.methods.getCharacterIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
+      const charIdArray = await cryptoQuest.methods.getCharacterIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
 
-        assert.equal(1, charIdArray.length);
-        const data = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
+      assert.equal(1, charIdArray.length);
+      const data = await cryptoQuest.methods.getCharacter(charIdArray[0]).call({from: accounts[0], gas : '5000000'});
 
-				const character = new Character(data);
+			const character = new Character(data);
 
-        assert.equal(1, character.tokenId);  // tokenId
-        assert.equal(0, character.characterType);  // characterType
-        assert.equal(1, character.level);  // level
+      assert.equal(1, character.tokenId);  // tokenId
+      assert.equal(0, character.characterType);  // characterType
+      assert.equal(1, character.level);  // level
 
-        assert.equal(5, character.health);
-        assert.equal(5, character.strength);
-        assert.equal(5, character.dexterity);
+      assert.equal(5, character.health);
+      assert.equal(5, character.strength);
+      assert.equal(5, character.dexterity);
 
-        assert.equal(5, character.intelligence);
-        assert.equal(5, character.wisdom);
-        assert.equal(5, character.charisma);
+      assert.equal(5, character.intelligence);
+      assert.equal(5, character.wisdom);
+      assert.equal(5, character.charisma);
 
-				assert.deepEqual([0,0,0,0,0,0], character.itemIds)
-				assert.equal('Derek', character.name)
-    });
-
+			assert.deepEqual([0,0,0,0,0,0], character.itemIds)
+			assert.equal('Derek', character.name)
+  });
 
 	it('user can not set itemBasePrice', async () => {
 		try {
@@ -149,29 +148,29 @@ describe('CryptoQuest', () => {
 		assert.equal(100, price);
 	});
 
-    it('users can generate a random item', async () => {
-        await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
-        await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[0]});
+  it('users can generate a random item', async () => {
+      await cryptoQuest.methods.setRandomNumbers([0, 0]).send({from: accounts[0], gas : '1000000'});
+      await cryptoQuest.methods.setItemBasePrice(100).send({from: accounts[0]});
 
-        await cryptoQuest.methods.generateRandomItem().send({from: accounts[1], gas : '1000000', value: 100});
+      await cryptoQuest.methods.generateRandomItem().send({from: accounts[1], gas : '1000000', value: 100});
 
-        const itemIdArray = await cryptoQuest.methods.getItemIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
+      const itemIdArray = await cryptoQuest.methods.getItemIdsByAddress(accounts[1]).call({from: accounts[0], gas : '1000000'});
 
-        assert.equal(1, itemIdArray.length);
-        const array = await cryptoQuest.methods.getItem(itemIdArray[0]).call({from: accounts[0], gas : '5000000'});
+      assert.equal(1, itemIdArray.length);
+      const array = await cryptoQuest.methods.getItem(itemIdArray[0]).call({from: accounts[0], gas : '5000000'});
 
-        const propertiesArray = array[0];
-        assert.equal(itemIdArray[0], propertiesArray[0]);
+      const propertiesArray = array[0];
+      assert.equal(itemIdArray[0], propertiesArray[0]);
 
-        assert.equal(5, propertiesArray[1]);
-        assert.equal(0, propertiesArray[2]);
-        assert.equal(9, propertiesArray[3]);
-        assert.equal(5, propertiesArray[4]);
-        assert.equal(2, propertiesArray[5]);
-        assert.equal(1, propertiesArray[6]);
-        assert.equal("Dagger of doom", array[1]);  // characterType
-        assert.equal("", array[2]);  // level
-    });
+      assert.equal(5, propertiesArray[1]);
+      assert.equal(0, propertiesArray[2]);
+      assert.equal(9, propertiesArray[3]);
+      assert.equal(5, propertiesArray[4]);
+      assert.equal(2, propertiesArray[5]);
+      assert.equal(1, propertiesArray[6]);
+      assert.equal("Dagger of doom", array[1]);  // characterType
+      assert.equal("", array[2]);  // level
+  });
 
 	it('equips an item to a character', async () => {
 		//generate an item
