@@ -88,6 +88,33 @@ contract CryptoQuest {
         lastTokenId = 1;
 
 
+        dungeons.push(
+          Dungeon({
+            dungeonId: 0,
+            description: "easy",
+            damage: 1,
+            health: 1
+        }));
+
+        dungeons.push(
+          Dungeon({
+            dungeonId: 1,
+            description: "medium",
+            damage: 2,
+            health: 2
+        }));
+
+        dungeons.push(
+          Dungeon({
+            dungeonId: 2,
+            description: "hard",
+            damage: 3,
+            health: 3
+            }));
+
+
+
+
         //shouldnt token ids be set by the lastTokenId prop?
         // We should use a function that ads an item and increments the
         // lastTokenId
@@ -238,12 +265,12 @@ contract CryptoQuest {
     }
 
 
-    function goIntoDungeonV2(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
+    function goIntoDungeon(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
 
         require(msg.sender == ownerByTokenId[characterId]);
 
         //get char
-        Character memory character = characterByTokenId[characterId];
+        // Character memory character = characterByTokenId[characterId];
 
         //get totals
         uint8 totalArmor = 0;
@@ -261,16 +288,9 @@ contract CryptoQuest {
         }
 
        //get dungeon
-       //dungeons[dungeonId]
+       Dungeon memory dungeon = dungeons[dungeonId];
+       
        //check if damage and armor are greater
-
-        Dungeon memory dungeon = Dungeon({
-            dungeonId: 34,
-            description : "",
-            damage: 2,
-            health : 2
-        });
-
         if (totalArmor > dungeon.health && totalDamage > dungeon.damage) {
             generateRandomItem();
         } else {
@@ -284,9 +304,7 @@ contract CryptoQuest {
                 transferItem(msg.sender, owner, itemId);
                 break; //break so we only transfer one item
             }
-            //uint tokenId = item.tokenId;
         }
-
     }
     // kill this?
     function loadItems(Character character) private view returns (Item[]) {
