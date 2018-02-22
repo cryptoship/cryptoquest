@@ -9,8 +9,8 @@ contract CryptoQuest {
     mapping(uint => Item) itemsByTokenId;
     uint lastTokenId;
 
-    mapping(address => uint[]) charactersByAddress;
-    mapping(address => uint[]) itemsByAddress;
+    mapping(address => uint[]) charactersByAddress; //give user address and get all char associated
+    mapping(address => uint[]) itemsByAddress; //give user address and get all items associated
 
     Dungeon[] dungeons;
 
@@ -19,21 +19,6 @@ contract CryptoQuest {
 
     uint private characterBasePrice;
     uint private itemBasePrice;
-
-    uint8 ITEM_SLOT_HEAD = 0;
-    uint8 ITEM_SLOT_NECK = 1;
-    uint8 ITEM_SLOT_BODY = 2;
-    uint8 ITEM_SLOT_FEET = 3;
-    uint8 ITEM_SLOT_LEFT_HAND = 4;
-    uint8 ITEM_SLOT_RIGHT_HAND = 5;
-
-    //character types
-    uint8 CHARACTER_TYPE_HUMAN = 0;
-    uint8 CHARACTER_TYPE_ORC = 1;
-    uint8 CHARACTER_TYPE_ELF = 2;
-    uint8 CHARACTER_TYPE_CAT = 3;
-    uint8 CHARACTER_TYPE_PANDA = 4;
-
 
     struct Character {
         uint256 tokenId;
@@ -51,6 +36,22 @@ contract CryptoQuest {
         uint[6] items;
         string name;
     }
+
+    //item slots
+    uint8 ITEM_SLOT_HEAD = 0;
+    uint8 ITEM_SLOT_NECK = 1;
+    uint8 ITEM_SLOT_BODY = 2;
+    uint8 ITEM_SLOT_FEET = 3;
+    uint8 ITEM_SLOT_LEFT_HAND = 4;
+    uint8 ITEM_SLOT_RIGHT_HAND = 5;
+
+    //character types
+    uint8 CHARACTER_TYPE_HUMAN = 0;
+    uint8 CHARACTER_TYPE_ORC = 1;
+    uint8 CHARACTER_TYPE_ELF = 2;
+    uint8 CHARACTER_TYPE_CAT = 3;
+    uint8 CHARACTER_TYPE_PANDA = 4;
+
 
     struct Item {
         string name;
@@ -215,35 +216,26 @@ contract CryptoQuest {
         }
     }
 
-    // //pass the whole item array to this just like equip, uint[6] itemIds
-    // function goIntoDungeon(uint characterId, uint headItem, uint rightHandItem) public {
-    //     //equip(characterId, headItem, rightHandItem);
-    //     require(msg.sender == ownerByTokenId[characterId]);
+    //unequip character with items
+    function unequip(uint characterId, uint8 indexOfItemToRemove ) public {
+        require(msg.sender == ownerByTokenId[characterId]);
 
-    //     // is this actually a Character
+        //load char
+        Character storage character = characterByTokenId[characterId];
 
-    //     Character memory character = characterByTokenId[characterId];
+        uint itemTokenId = character.items[indexOfItemToRemove];
 
-    //     Item[] memory items = loadItems(character);
+         //check to see if that item is currently equipped
+        require(itemTokenId != 0);
 
-    //     // throw the dice
+        //remove item from char
+        Item storage itemToRemove = itemsByTokenId[itemTokenId];
+        itemToRemove.onCharacterId = 0;
 
-    //     if (true) {
-    //         Item newItem;
-    //         //newItem.tokenId = lastTokenId++;
-    //         //ownerByTokenId[newItem.tokenId] = msg.sender;
-    //         //itemsByTokenId[newItem.tokenId] = newItem;
-    //         // newItem.type = ...;
-    //     } else {
-    //         // choose an item and destroy it
-    //         Item memory item = items[0];
-    //         //uint tokenId = item.tokenId;
-
-    //         // remove from Character
-    //         // remove from owners
-    //     }
-
-    // }
+        //remove char from item
+        /* itemTokenId = 0; */
+        character.items[indexOfItemToRemove] = 0;
+    }
 
 
     function goIntoDungeonV2(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
@@ -570,7 +562,9 @@ contract CryptoQuest {
       return itemsByAddress[a];
     }
 
-    function getCharacter(uint characterId) public view returns (uint[15], string) {
+
+    //i feel like this function should return a struct of the character
+    function getCharacterDetails(uint characterId) public view returns (uint[15], string) {
 
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
