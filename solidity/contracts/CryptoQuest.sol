@@ -243,38 +243,19 @@ contract CryptoQuest {
         }
     }
 
-    //unequip character with items
-    function unequip(uint characterId, uint8 indexOfItemToRemove ) public {
-        require(msg.sender == ownerByTokenId[characterId]);
-
-        //load char
-        Character storage character = characterByTokenId[characterId];
-
-        uint itemTokenId = character.items[indexOfItemToRemove];
-
-         //check to see if that item is currently equipped
-        require(itemTokenId != 0);
-
-        //remove item from char
-        Item storage itemToRemove = itemsByTokenId[itemTokenId];
-        itemToRemove.onCharacterId = 0;
-
-        //remove char from item
-        /* itemTokenId = 0; */
-        character.items[indexOfItemToRemove] = 0;
-    }
-
 
     function goIntoDungeon(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
-
         require(msg.sender == ownerByTokenId[characterId]);
 
         //get char
-        // Character memory character = characterByTokenId[characterId];
+        Character memory character = characterByTokenId[characterId];
+
+        uint8 health;
+        uint8 strength;
 
         //get totals
-        uint8 totalArmor = 0;
-        uint8 totalDamage = 0;
+        uint8 itemArmor = 0;
+        uint8 itemDamage = 0;
 
         for (uint8 i = 0; i < itemIds.length; i++) {
            uint itemId = itemIds[i];
@@ -283,29 +264,54 @@ contract CryptoQuest {
            }
            require (ownerByTokenId[itemId] == msg.sender);
            Item memory item = itemsByTokenId[itemId];
-           totalArmor += item.armor;
-           totalDamage += item.damage;
+           itemArmor += item.armor;
+           itemDamage += item.damage;
         }
 
+       uint8 totalCharacterDamage = itemDamage + charater.strength;
        //get dungeon
        Dungeon memory dungeon = dungeons[dungeonId];
-       
-       //check if damage and armor are greater
-        if (totalArmor > dungeon.health && totalDamage > dungeon.damage) {
-            generateRandomItem();
-        } else {
-            // choose an item and destroy it
-            for ( i = 0; i < itemIds.length; i++) {
-                itemId = itemIds[i];
-                if (itemId == 0) {
-                    continue;
-                }
 
-                transferItem(msg.sender, owner, itemId);
-                break; //break so we only transfer one item
-            }
-        }
+       bool charLost = false;
+       bool dungeonLost = false;
+       uint charHealth = charater.health;
+       uint dungeonHealth = dungeon.health;
+
+       while (true) {
+          uint damageOutput = dungeon.damage  /*+randomDamage*/ - itemArmor;
+          if (damageOutput > charHealth) {
+            charLost = true;
+            break;
+          } else {
+            charHealth = charHealth - damageOutput;
+          }
+
+          uint charDamageOutput = totalCharacterDamage  /*+randomDamage*/;
+          if (charDamageOutput > dungeonHealth) {
+            dungeonLost = true;
+            break;
+          } else {
+            dungeonHealth = dungeonHealth - charDamageOutput;
+          }
+       }
+
+       require(charLost != dungeonLost);
+       if (charLost) {
+         // choose an item and destroy it
+         for ( i = 0; i < itemIds.length; i++) {
+             itemId = itemIds[i];
+             if (itemId == 0) {
+                 continue;
+             }
+
+             transferItem(msg.sender, owner, itemId);
+             break; //break so we only transfer one item
+         }
+       } else {
+         generateRandomItem();
+       }
     }
+    
     // kill this?
     function loadItems(Character character) private view returns (Item[]) {
         require(character.items.length < 256);
