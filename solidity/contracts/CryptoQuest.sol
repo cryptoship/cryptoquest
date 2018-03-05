@@ -90,7 +90,7 @@ contract CryptoQuest {
 
         dungeons.push(
           Dungeon({
-            dungeonId: 0,
+            dungeonId: 1,
             description: "easy",
             damage: 1,
             health: 1
@@ -98,7 +98,7 @@ contract CryptoQuest {
 
         dungeons.push(
           Dungeon({
-            dungeonId: 1,
+            dungeonId: 2,
             description: "medium",
             damage: 2,
             health: 2
@@ -106,7 +106,7 @@ contract CryptoQuest {
 
         dungeons.push(
           Dungeon({
-            dungeonId: 2,
+            dungeonId: 3,
             description: "hard",
             damage: 3,
             health: 3
@@ -243,9 +243,27 @@ contract CryptoQuest {
         }
     }
 
+    function getItemDamageAndArmor(uint[6] itemIds) returns (uint8, uint8) {
+      uint8 itemArmor = 0;
+      uint8 itemDamage = 0;
+      for (uint8 i = 0; i < itemIds.length; i++) {
+         uint itemId = itemIds[i];
+         if (itemId == 0) {
+           continue;
+         }
+         require (ownerByTokenId[itemId] == msg.sender);
+         Item memory item = itemsByTokenId[itemId];
+         itemArmor += item.armor;
+         itemDamage += item.damage;
+      }
+
+      return (itemDamage, itemArmor);
+    }
+
 
     function goIntoDungeon(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
         require(msg.sender == ownerByTokenId[characterId]);
+        equip(characterId, itemIds);
 
         //get char
         Character memory character = characterByTokenId[characterId];
@@ -253,32 +271,21 @@ contract CryptoQuest {
         uint8 health;
         uint8 strength;
 
+        uint8 itemArmor;
+        uint8 itemDamage;
+        (itemDamage, itemArmor) = getItemDamageAndArmor(itemIds);
         //get totals
-        uint8 itemArmor = 0;
-        uint8 itemDamage = 0;
-
-        for (uint8 i = 0; i < itemIds.length; i++) {
-           uint itemId = itemIds[i];
-           if (itemId == 0) {
-             continue;
-           }
-           require (ownerByTokenId[itemId] == msg.sender);
-           Item memory item = itemsByTokenId[itemId];
-           itemArmor += item.armor;
-           itemDamage += item.damage;
-        }
-
-       uint8 totalCharacterDamage = itemDamage + charater.strength;
+       uint8 totalCharacterDamage = itemDamage + character.strength;
        //get dungeon
        Dungeon memory dungeon = dungeons[dungeonId];
 
        bool charLost = false;
-       bool dungeonLost = false;
-       uint charHealth = charater.health;
+       uint charHealth = character.health;
        uint dungeonHealth = dungeon.health;
+       uint damageOutput = 0;
 
        while (true) {
-          uint damageOutput = dungeon.damage  /*+randomDamage*/ - itemArmor;
+          damageOutput = dungeon.damage  /*+randomDamage*/ - itemArmor;
           if (damageOutput > charHealth) {
             charLost = true;
             break;
@@ -286,32 +293,34 @@ contract CryptoQuest {
             charHealth = charHealth - damageOutput;
           }
 
-          uint charDamageOutput = totalCharacterDamage  /*+randomDamage*/;
-          if (charDamageOutput > dungeonHealth) {
-            dungeonLost = true;
+          damageOutput = totalCharacterDamage  /*+randomDamage*/;
+          if (damageOutput > dungeonHealth) {
             break;
           } else {
-            dungeonHealth = dungeonHealth - charDamageOutput;
+            dungeonHealth = dungeonHealth - damageOutput;
           }
        }
-
-       require(charLost != dungeonLost);
-       if (charLost) {
-         // choose an item and destroy it
-         for ( i = 0; i < itemIds.length; i++) {
-             itemId = itemIds[i];
-             if (itemId == 0) {
-                 continue;
-             }
-
-             transferItem(msg.sender, owner, itemId);
-             break; //break so we only transfer one item
-         }
-       } else {
-         generateRandomItem();
-       }
+       calculateConsequences(charLost, character);
     }
-    
+
+    function calculateConsequences(bool charLost, Character c) private {
+      uint256[6] memory itemIds = c.items;
+      if (charLost) {
+        // choose an item and destroy it
+        for (uint8 i = 0; i < itemIds.length; i++) {
+            uint itemId = itemIds[i];
+            if (itemId == 0) {
+                continue;
+            }
+
+            transferItem(msg.sender, owner, itemId);
+            break; //break so we only transfer one item
+        }
+      } else {
+        doGenerateRandomItem();
+      }
+    }
+
     // kill this?
     function loadItems(Character character) private view returns (Item[]) {
         require(character.items.length < 256);
@@ -329,7 +338,11 @@ contract CryptoQuest {
 
     function generateRandomItem() public payable {
       require(msg.value >= itemBasePrice);
+      doGenerateRandomItem();
 
+    }
+
+    function doGenerateRandomItem() private {
       Item memory item = startItems[getNextRandomNumber() % startItems.length];
       item.tokenId = lastTokenId++;
 
