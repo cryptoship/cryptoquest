@@ -440,77 +440,6 @@ contract CryptoQuest {
         charactersByAddress[newOwner].push(character.tokenId);
     }
 
-    function getTotalItemsForSale() public view returns (uint) {
-        return getTotalItemsForOwner(owner);
-    }
-
-    function getTotalCharactersForSale() public view returns (uint) {
-        return getTotalCharactersForOwner(owner);
-    }
-
-    function getItemsForSale(uint from, uint to) public view returns (Item[]) {
-        return getItems(from, to, owner);
-    }
-
-    function getCharactersForSale(uint from, uint to) public view returns (Character[]) {
-        return getCharacters(from, to, owner);
-    }
-
-
-    function getMyTotalCharacterCount() public view returns (uint) {
-        return getTotalCharactersForOwner(msg.sender);
-    }
-
-    function getMyTotalItemCount() public view returns (uint) {
-        return getTotalItemsForOwner(msg.sender);
-    }
-
-    function getMyCharacters(uint from, uint to) public view returns (Character[]){
-        return getCharacters(from, to, msg.sender);
-    }
-
-    function getMyItems(uint from, uint to) public view returns (Item[]){
-        return getItems(from, to, msg.sender);
-    }
-
-
-    function getTotalItemsForOwner(address owningAddress) private view returns (uint) {
-        return itemsByAddress[owningAddress].length;
-    }
-
-    function getTotalCharactersForOwner(address owningAddress) private view returns (uint) {
-        return charactersByAddress[owningAddress].length;
-    }
-
-    function getItems(uint from, uint to, address owningAddress) private view returns (Item[]) {
-        uint[] memory itemIds = itemsByAddress[owningAddress];
-        require(from < to);
-        require(to <= itemIds.length);
-
-        Item[] memory items;
-        for (uint i = 0; i < to-from; i++) {
-            uint tokenId = itemIds[i + from];
-            items[i] = itemsByTokenId[tokenId];
-        }
-
-        return items;
-    }
-
-    function getCharacters(uint from, uint to, address owningAddress) private view returns (Character[]) {
-        uint[] memory characterIds = charactersByAddress[owningAddress];
-        require(from < to);
-        require(to <= characterIds.length);
-
-        Character[] memory characters;
-
-        for (uint i = 0; i < to-from; i++) {
-            uint tokenId = characterIds[i + from];
-            characters[i] = characterByTokenId[tokenId];
-        }
-
-        return characters;
-    }
-
     function buyItem(uint itemId) public payable {
         // is the item for sale?
         require(ownerByTokenId[itemId] == owner);
@@ -643,21 +572,5 @@ contract CryptoQuest {
         array[6] = i.blockChance;
 
         return (array, i.name, i.description);
-    }
-
-    function strConcat(string first, string second) private returns (string) {
-        bytes memory bytesFirst = bytes(first);
-        bytes memory bytesSecond = bytes(second);
-
-        string memory tempString = new string(bytesFirst.length + bytesSecond.length);
-        bytes memory array = bytes(tempString);
-        uint j = 0;
-        for (uint i = 0; i < bytesFirst.length; i++) {
-        array[j++] = bytesFirst[i];
-        }
-
-        for (i = 0; i < bytesSecond.length; i++) {
-            array[j++] = bytesSecond[i];
-        }
     }
 }
