@@ -27,11 +27,10 @@ contract CryptoQuest {
         uint8 characterType;
         uint8 level;
         uint8 health;
-        uint8 strength;
-        uint8 dexterity;
-        uint8 intelligence;
-        uint8 wisdom;
-        uint8 charisma;
+        uint8 damage;
+        uint8 fireResistance;
+        uint8 iceResistance;
+        uint8 poisonResistance;
         // items the Character is wearing
         uint[6] items;
         string name;
@@ -64,19 +63,22 @@ contract CryptoQuest {
         uint8 slot;
         uint8 armor;
         uint8 damage;
-        uint8 attackSpeed;
-        uint8 evasion;
-        uint8 blockChance;
+        uint8 fireResistance;
+        uint8 iceResistance;
+        uint8 poisonResistance;
     }
 
     Item[] private startItems;
 
     struct Dungeon {
         uint8 dungeonId;
+        string name;
         // Should description live in the contract or be a
         // const outside of the contract
         string description;
-
+        uint8 fireAttack;
+        uint8 iceAttack;
+        uint8 poisonAttack;
         uint8 damage;
         uint8 health;
     }
@@ -90,26 +92,38 @@ contract CryptoQuest {
 
         dungeons.push(
           Dungeon({
+            name: "Fire Dungeon",
             dungeonId: 1,
             description: "easy",
             damage: 1,
-            health: 1
+            health: 1,
+            fireAttack: 5,
+            iceAttack: 0,
+            poisonAttack: 0
         }));
 
         dungeons.push(
           Dungeon({
+            name:"Ice Dungeon",
             dungeonId: 2,
             description: "medium",
             damage: 2,
-            health: 2
+            health: 2,
+            fireAttack: 0,
+            iceAttack:  4,
+            poisonAttack: 0
         }));
 
         dungeons.push(
           Dungeon({
             dungeonId: 3,
+            name:"Poison Dungeon",
             description: "hard",
-            damage: 3,
-            health: 3
+            damage: 2,
+            health: 3,
+            fireAttack: 0,
+            iceAttack:  0,
+            poisonAttack: 5
             }));
 
 
@@ -125,10 +139,10 @@ contract CryptoQuest {
                 name: "Dagger of doom",
                 description : "",
                 armor : 0,
-                damage: 9,
-                attackSpeed: 5,
-                evasion : 2,
-                blockChance : 1,
+                damage: 4,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
 
@@ -139,10 +153,10 @@ contract CryptoQuest {
                 name: "sword",
                 description : "",
                 armor : 3,
-                damage: 10,
-                attackSpeed: 2,
-                evasion : 0,
-                blockChance : 4,
+                damage: 0,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
 
@@ -153,10 +167,10 @@ contract CryptoQuest {
                 name: "boomerang",
                 description : "",
                 armor : 0,
-                damage: 1,
-                attackSpeed: 5,
-                evasion : 0,
-                blockChance : 0,
+                damage: 2,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
 
@@ -167,10 +181,10 @@ contract CryptoQuest {
                 name: "nice boots",
                 description : "",
                 armor : 7,
-                damage: 0,
-                attackSpeed: 0,
-                evasion : 3,
-                blockChance : 1,
+                damage : 1,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
 
@@ -181,10 +195,10 @@ contract CryptoQuest {
                 name: "basic boots",
                 description : "",
                 armor : 6,
-                damage: 0,
-                attackSpeed: 0,
-                evasion : 3,
-                blockChance : 1,
+                damage : 0,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
 
@@ -195,10 +209,10 @@ contract CryptoQuest {
                 name: "basic chest armor",
                 description : "",
                 armor : 3,
-                damage: 0,
-                attackSpeed: 0,
-                evasion : 1,
-                blockChance : 0,
+                damage : 0,
+                fireResistance: 0,
+                iceResistance : 0,
+                poisonResistance : 0,
                 onCharacterId : 0
             }));
             //also create a startDungeons init
@@ -274,7 +288,7 @@ contract CryptoQuest {
         uint8 itemDamage;
         (itemDamage, itemArmor) = getItemDamageAndArmor(itemIds);
         //get totals
-       uint8 totalCharacterDamage = itemDamage + character.strength;
+       uint8 totalCharacterDamage = itemDamage + character.damage;
        //get dungeon
        Dungeon memory dungeon = dungeons[dungeonId];
 
@@ -343,6 +357,7 @@ contract CryptoQuest {
     }
 
     function doGenerateRandomItem() private {
+
       Item memory templateItem = startItems[getNextRandomNumber() % startItems.length];
       Item memory item = Item ({
         tokenId: lastTokenId++,
@@ -351,9 +366,9 @@ contract CryptoQuest {
         description : templateItem.description,
         armor : templateItem.armor + getNextRandomNumber() % 3,
         damage: templateItem.damage + getNextRandomNumber() % 5,
-        attackSpeed: templateItem.attackSpeed + getNextRandomNumber() % 3,
-        evasion : templateItem.evasion + getNextRandomNumber() % 3,
-        blockChance : templateItem.blockChance + getNextRandomNumber() % 3,
+        fireResistance: templateItem.fireResistance + getNextRandomNumber() % 3,
+        iceResistance : templateItem.iceResistance + getNextRandomNumber() % 3,
+        poisonResistance : templateItem.poisonResistance + getNextRandomNumber() % 3,
         onCharacterId : 0
       });
 
@@ -397,7 +412,6 @@ contract CryptoQuest {
         getRandomAttribute(),
         getRandomAttribute(),
         getRandomAttribute(),
-        getRandomAttribute(),
         /* level */ 1,
         characterType,
         name,
@@ -418,24 +432,21 @@ contract CryptoQuest {
     }
 
     function generateCharacterForOwner(uint8 health,
-                                        uint8 strength,
-                                        uint8 dexterity,
-                                        uint8 intelligence,
-                                        uint8 wisdom,
-                                        uint8 charisma,
+                                       uint8 damage,
+                                        uint8 fireResistance,
+                                        uint8 iceResistance,
+                                        uint8 poisonResistance,
                                         uint8 level,
                                         uint8 characterType,
                                         string name,
                                         address newOwner) private {
 
         Character memory character;
-
         character.health = health;
-        character.strength = strength;
-        character.dexterity = dexterity;
-        character.intelligence = intelligence;
-        character.wisdom = wisdom;
-        character.charisma = charisma;
+        character.damage = damage;
+        character.fireResistance = fireResistance;
+        character.iceResistance = iceResistance;
+        character.poisonResistance = poisonResistance;
         character.level = level;
         character.name = name;
         character.tokenId = lastTokenId++;
@@ -535,31 +546,28 @@ contract CryptoQuest {
 
 
     //i feel like this function should return a struct of the character
-    function getCharacterDetails(uint characterId) public view returns (uint[15], string) {
-
+    function getCharacterDetails(uint characterId) public view returns (uint[14], string) {
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
         // Why do we need to do things like this as an array?
         // Are we sure there isn't a better way?
-        uint[15] memory array;
+        uint[14] memory array;
         array[0] = c.tokenId;
         array[1] = c.characterType;
 
-
         array[2] = c.level;
         array[3] = c.health;
-        array[4] = c.strength;
-        array[5] = c.dexterity;
-        array[6] = c.intelligence;
-        array[7] = c.wisdom;
-        array[8] = c.charisma;
+        array[4] = c.damage;
+        array[5] = c.fireResistance;
+        array[6] = c.iceResistance;
+        array[7] = c.poisonResistance;
 
-        array[9] = c.items[0];
-        array[10] = c.items[1];
-        array[11] = c.items[2];
-        array[12] = c.items[3];
-        array[13] = c.items[4];
-        array[14] = c.items[5];
+        array[8] = c.items[0];
+        array[9] = c.items[1];
+        array[10] = c.items[2];
+        array[11] = c.items[3];
+        array[12] = c.items[4];
+        array[13] = c.items[5];
 
         return (array, c.name);
     }
@@ -572,9 +580,9 @@ contract CryptoQuest {
         array[1] = i.slot;
         array[2] = i.armor;
         array[3] = i.damage;
-        array[4] = i.attackSpeed;
-        array[5] = i.evasion;
-        array[6] = i.blockChance;
+        array[4] = i.fireResistance;
+        array[5] = i.iceResistance;
+        array[6] = i.poisonResistance;
 
         return (array, i.name, i.description);
     }

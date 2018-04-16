@@ -95,14 +95,13 @@ describe('CryptoQuest', () => {
     assert.equal(1, character.level); // level
 
     assert.equal(5, character.health);
-    assert.equal(5, character.strength);
-    assert.equal(5, character.dexterity);
+    assert.equal(5, character.damage);
+    assert.equal(5, character.fireResistance);
 
-    assert.equal(5, character.intelligence);
-    assert.equal(5, character.wisdom);
-    assert.equal(5, character.charisma);
+    assert.equal(5, character.iceResistance);
+    assert.equal(5, character.poisonResistance);
 
-    assert.deepEqual([0, 0, 0, 0, 0, 0], character.itemIds);
+    assert.deepEqual(Character.EMPTY_ITEMS, character.itemIds);
     assert.equal('Derek', character.name);
   });
 
@@ -141,10 +140,10 @@ describe('CryptoQuest', () => {
 
     assert.equal(5, item.slot);
     assert.equal(0, item.armor);
-    assert.equal(9, item.damage);
-    assert.equal(5, item.attackSpeed);
-    assert.equal(2, item.evasion);
-    assert.equal(1, item.blockChance);
+    assert.equal(4, item.damage);
+    assert.equal(0, item.fireResistance);
+    assert.equal(0, item.iceResistance);
+    assert.equal(0, item.poisonResistance);
     assert.equal('Dagger of doom', item.name);
     assert.equal('', item.description);
   });

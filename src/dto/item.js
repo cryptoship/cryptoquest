@@ -4,7 +4,7 @@ class Item {
     var array = data[0];
 
     if (array.length !== 7) {
-      throw new Error(`array length should be 7. Instead it's ${array.length}`);
+      throw new Error(`array length should be 10. Instead it's ${array.length}`);
     }
 
     return new Item(
@@ -20,16 +20,17 @@ class Item {
     );
   }
 
-  constructor(name, description, tokenId, slot, armor, damage, attackSpeed, evasion, blockChance) {
+  constructor(name, description, tokenId, slot, armor,
+    damage, fireResistance, iceResistance, poisonResistance) {
     this.name = name;
     this.description = description;
     this.tokenId = tokenId;
     this.slot = slot;
     this.armor = armor;
     this.damage = damage;
-    this.attackSpeed = attackSpeed;
-    this.evasion = evasion;
-    this.blockChance = blockChance;
+    this.fireResistance = fireResistance;
+    this.iceResistance = iceResistance;
+    this.poisonResistance = poisonResistance;
   }
 }
 
