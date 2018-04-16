@@ -44,13 +44,6 @@ contract CryptoQuest {
     uint8 ITEM_SLOT_LEFT_HAND = 4;
     uint8 ITEM_SLOT_RIGHT_HAND = 5;
 
-    //character types
-    uint8 CHARACTER_TYPE_HUMAN = 0;
-    uint8 CHARACTER_TYPE_ORC = 1;
-    uint8 CHARACTER_TYPE_ELF = 2;
-    uint8 CHARACTER_TYPE_CAT = 3;
-    uint8 CHARACTER_TYPE_PANDA = 4;
-
 
     struct Item {
         string name;
@@ -402,9 +395,34 @@ contract CryptoQuest {
         return randomNumbers;
     }
 
+    function generateCharacter(uint8 characterType, string name,
+      uint8 health, uint8 damage, uint8 fireResistance, uint8 iceResistance,
+      uint8 poisonResistance) public payable {
+        require(msg.value >= characterBasePrice);
+
+        uint256 totalAttributes = 0;
+        totalAttributes = totalAttributes + health;
+        totalAttributes = totalAttributes + damage;
+        totalAttributes = totalAttributes + fireResistance;
+        totalAttributes = totalAttributes + iceResistance;
+        totalAttributes = totalAttributes + poisonResistance;
+
+        require(totalAttributes <= 70);
+
+        generateCharacterForOwner(
+          health,
+          damage,
+          fireResistance,
+          iceResistance,
+          poisonResistance,
+          /* level */ 1,
+          characterType,
+          name,
+          msg.sender);
+    }
+
     function generateRandomCharacter(uint8 characterType, string name) public payable {
         require(msg.value >= characterBasePrice);
-        require(characterType <= CHARACTER_TYPE_PANDA);
 
         generateCharacterForOwner(
         getRandomAttribute(),

@@ -105,6 +105,63 @@ describe('CryptoQuest', () => {
     assert.equal('Derek', character.name);
   });
 
+  it('users can generate a character', async () => {
+    await cryptoQuest.methods.setRandomNumbers([0, 0]).send({ from: accounts[0], gas: '1000000' });
+    await cryptoQuest.methods.setCharacterBasePrice(100).send({ from: accounts[0] });
+
+    await cryptoQuest.methods
+      .generateCharacter(0, 'Derek', 1, 2, 3, 4, 5)
+      .send({ from: accounts[1], gas: '1000000', value: 100 });
+
+    const charIdArray = await cryptoQuest.methods
+      .getCharacterIdsByAddress(accounts[1])
+      .call({ from: accounts[0], gas: '1000000' });
+
+    assert.equal(1, charIdArray.length);
+    const data = await cryptoQuest.methods
+      .getCharacterDetails(charIdArray[0])
+      .call({ from: accounts[0], gas: '5000000' });
+
+    const character = Character.fromData(data);
+
+    assert.equal(1, character.tokenId); // tokenId
+    assert.equal(0, character.characterType); // characterType
+    assert.equal(1, character.level); // level
+
+    assert.equal(1, character.health);
+    assert.equal(2, character.damage);
+    assert.equal(3, character.fireResistance);
+
+    assert.equal(4, character.iceResistance);
+    assert.equal(5, character.poisonResistance);
+
+    assert.deepEqual(Character.EMPTY_ITEMS, character.itemIds);
+    assert.equal('Derek', character.name);
+  });
+
+  it('users can not assign more than 70 stats', async () => {
+    await cryptoQuest.methods.setRandomNumbers([0, 0]).send({ from: accounts[0], gas: '1000000' });
+    await cryptoQuest.methods.setCharacterBasePrice(100).send({ from: accounts[0] });
+
+    try {
+    await cryptoQuest.methods
+      .generateCharacter(0, 'Derek', 0, 0, 0, 30, 41)
+      .send({ from: accounts[1], gas: '1000000', value: 100 });
+      assert(false);
+    } catch (e) {
+      assert.ok(e);
+    }
+
+    try {
+    await cryptoQuest.methods
+      .generateCharacter(0, 'Derek', 255, 4, 0, 0, 1)
+      .send({ from: accounts[1], gas: '1000000', value: 100 });
+      assert(false);
+    } catch (e) {
+      assert.ok(e);
+    }
+  });
+
   it('user can not set itemBasePrice', async () => {
     try {
       await cryptoQuest.methods.setItemBasePrice(100).send({ from: accounts[1] });
