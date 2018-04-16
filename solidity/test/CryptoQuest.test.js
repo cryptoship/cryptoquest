@@ -296,4 +296,53 @@ describe('CryptoQuest', () => {
       .call({ from: accounts[1], gas: '1000000' });
     assert.equal(2, itemIdArray2.length);
   });
+
+  it('users can set items for sale', async () => {
+    await cryptoQuest.methods.setRandomNumbers([0, 0]).send({ from: accounts[0], gas: '1000000' });
+    await cryptoQuest.methods.setItemBasePrice(100).send({ from: accounts[0] });
+
+    await cryptoQuest.methods.generateRandomItem().send({ from: accounts[1], gas: '1000000', value: 100 });
+
+    const itemIdArray = await cryptoQuest.methods
+      .getItemIdsByAddress(accounts[1])
+      .call({ from: accounts[0], gas: '1000000' });
+
+    assert.equal(1, itemIdArray.length);
+    const array = await cryptoQuest.methods.getItem(itemIdArray[0]).call({ from: accounts[0], gas: '5000000' });
+    const item = Item.fromData(array);
+
+    const propertiesArray = array[0];
+    assert.equal(itemIdArray[0], item.tokenId);
+
+    assert.equal(5, item.slot);
+    assert.equal(0, item.armor);
+    assert.equal(4, item.damage);
+    assert.equal(0, item.fireResistance);
+    assert.equal(0, item.iceResistance);
+    assert.equal(0, item.poisonResistance);
+    assert.equal('Dagger of doom', item.name);
+    assert.equal('', item.description);
+
+    await cryptoQuest.methods.sendItemToMarketPlace(item.tokenId, 25).send({ from: accounts[1], gas: '1000000' });
+    const item2 = Item.fromData(await cryptoQuest.methods.getItem(itemIdArray[0]).call({ from: accounts[0], gas: '5000000' }));
+
+    assert.equal(5, item2.slot);
+    assert.equal(0, item2.armor);
+    assert.equal(4, item2.damage);
+    assert.equal(0, item2.fireResistance);
+    assert.equal(0, item2.iceResistance);
+    assert.equal(0, item2.poisonResistance);
+    assert.equal('Dagger of doom', item2.name);
+    assert.equal('', item2.description);
+    assert.equal(true, item2.forSale);
+    assert.equal(25, item2.price);
+
+    const itemArray = await cryptoQuest.methods.getItemsForSale().call({ from: accounts[1], gas: '1000000' });
+    assert.deepEqual([item.tokenId], itemArray);
+
+    await cryptoQuest.methods.removeItemFromMarketPlace(item.tokenId).send({ from: accounts[1], gas: '1000000' });
+
+    const itemArray2 = await cryptoQuest.methods.getItemsForSale().call({ from: accounts[1], gas: '1000000' });
+    assert.deepEqual([], itemArray2);
+  });
 });

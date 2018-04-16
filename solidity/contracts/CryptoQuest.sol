@@ -12,6 +12,8 @@ contract CryptoQuest {
     mapping(address => uint[]) charactersByAddress; //give user address and get all char associated
     mapping(address => uint[]) itemsByAddress; //give user address and get all items associated
 
+    uint[] itemsInMarketPlace;
+
     Dungeon[] dungeons;
 
     uint8[] randomNumbers = [0,0,0,0];
@@ -59,6 +61,10 @@ contract CryptoQuest {
         uint8 fireResistance;
         uint8 iceResistance;
         uint8 poisonResistance;
+
+        // market place
+        bool forSale;
+        uint256 price;
     }
 
     Item[] private startItems;
@@ -136,7 +142,9 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
 
         startItems.push(
@@ -150,7 +158,9 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
 
         startItems.push(
@@ -164,7 +174,9 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
 
         startItems.push(
@@ -178,7 +190,9 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
 
         startItems.push(
@@ -192,7 +206,9 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
 
         startItems.push(
@@ -206,9 +222,45 @@ contract CryptoQuest {
                 fireResistance: 0,
                 iceResistance : 0,
                 poisonResistance : 0,
-                onCharacterId : 0
+                onCharacterId : 0,
+                forSale: false,
+                price : 0
             }));
             //also create a startDungeons init
+    }
+
+    function sendItemToMarketPlace(uint256 itemId, uint256 price) public {
+      require(msg.sender == ownerByTokenId[itemId]);
+      Item item = itemsByTokenId[itemId];
+
+      if (item.onCharacterId != 0) {
+        Character character = characterByTokenId[item.onCharacterId];
+        for (uint8 i = 0; i < character.items.length; i++) {
+           if (character.items[i] == itemId) {
+             item.onCharacterId = 0;
+             character.items[i] = 0;
+             characterByTokenId[item.onCharacterId] = character;
+             break;
+           }
+        }
+      }
+
+      item.forSale = true;
+      item.price = price;
+
+      itemsInMarketPlace.push(itemId);
+    }
+
+    function removeItemFromMarketPlace(uint256 itemId) public {
+      require(msg.sender == ownerByTokenId[itemId]);
+      Item item = itemsByTokenId[itemId];
+      item.forSale = false;
+      uint index = findValueInArray(itemsInMarketPlace, itemId);
+      itemsInMarketPlace = removeFromArray(itemsInMarketPlace, index);
+    }
+
+    function getItemsForSale() public returns (uint[])  {
+      return itemsInMarketPlace;
     }
 
     //equip character with items
@@ -328,16 +380,6 @@ contract CryptoQuest {
       }
     }
 
-    // kill this?
-    function loadItems(Character character) private view returns (Item[]) {
-        require(character.items.length < 256);
-        Item[] memory items;
-        for (uint8 i = 0; i < character.items.length; i++) {
-            items[i] = itemsByTokenId[character.items[i]];
-        }
-        return items;
-    }
-
     modifier admin() {
         require(msg.sender == owner);
         _;
@@ -346,7 +388,6 @@ contract CryptoQuest {
     function generateRandomItem() public payable {
       require(msg.value >= itemBasePrice);
       doGenerateRandomItem();
-
     }
 
     function doGenerateRandomItem() private {
@@ -362,7 +403,9 @@ contract CryptoQuest {
         fireResistance: templateItem.fireResistance + getNextRandomNumber() % 3,
         iceResistance : templateItem.iceResistance + getNextRandomNumber() % 3,
         poisonResistance : templateItem.poisonResistance + getNextRandomNumber() % 3,
-        onCharacterId : 0
+        onCharacterId : 0,
+        forSale: false,
+        price : 0
       });
 
       ownerByTokenId[item.tokenId] = msg.sender;
@@ -407,7 +450,7 @@ contract CryptoQuest {
         totalAttributes = totalAttributes + iceResistance;
         totalAttributes = totalAttributes + poisonResistance;
 
-        require(totalAttributes <= 70);
+          require(totalAttributes <= 70);
 
         generateCharacterForOwner(
           health,
@@ -590,10 +633,10 @@ contract CryptoQuest {
         return (array, c.name);
     }
 
-    function getItem(uint itemId) public view returns (uint[7], string, string) {
+    function getItem(uint itemId) public view returns (uint[9], string, string) {
         Item memory i = itemsByTokenId[itemId];
         require(i.tokenId != 0);
-        uint[7] memory array;
+        uint[9] memory array;
         array[0] = i.tokenId;
         array[1] = i.slot;
         array[2] = i.armor;
@@ -601,6 +644,8 @@ contract CryptoQuest {
         array[4] = i.fireResistance;
         array[5] = i.iceResistance;
         array[6] = i.poisonResistance;
+        array[7] = i.forSale ? 1 : 0;
+        array[8] = i.price;
 
         return (array, i.name, i.description);
     }

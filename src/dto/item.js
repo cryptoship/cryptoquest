@@ -3,8 +3,8 @@ class Item {
   static fromData(data) {
     var array = data[0];
 
-    if (array.length !== 7) {
-      throw new Error(`array length should be 10. Instead it's ${array.length}`);
+    if (array.length !== 9) {
+      throw new Error(`array length should be 9. Instead it's ${array.length}`);
     }
 
     return new Item(
@@ -16,12 +16,15 @@ class Item {
       array[3],
       array[4],
       array[5],
-      array[6]
+      array[6],
+      array[7],
+      array[8]
     );
   }
 
   constructor(name, description, tokenId, slot, armor,
-    damage, fireResistance, iceResistance, poisonResistance) {
+    damage, fireResistance, iceResistance, poisonResistance, forSale,
+    price) {
     this.name = name;
     this.description = description;
     this.tokenId = tokenId;
@@ -31,6 +34,8 @@ class Item {
     this.fireResistance = fireResistance;
     this.iceResistance = iceResistance;
     this.poisonResistance = poisonResistance;
+    this.forSale = forSale;
+    this.price = price;
   }
 }
 
