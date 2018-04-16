@@ -192,6 +192,7 @@ describe('CryptoQuest', () => {
     assert.deepEqual([generatedItemId, 0, 0, 0, 0, 0], updatedCharacter.itemIds);
   });
 
+
   it('go into dungeon', async () => {
     //generate an item
     await cryptoQuest.methods.setRandomNumbers([0, 0]).send({ from: accounts[0], gas: '1000000' });
@@ -200,6 +201,7 @@ describe('CryptoQuest', () => {
     const itemIdArray = await cryptoQuest.methods
       .getItemIdsByAddress(accounts[1])
       .call({ from: accounts[1], gas: '1000000' });
+
     assert.equal(1, itemIdArray.length);
     const generatedItemId = itemIdArray[0];
     const itemArray = await cryptoQuest.methods.getItem(generatedItemId).call({ from: accounts[0], gas: '5000000' });
@@ -232,7 +234,7 @@ describe('CryptoQuest', () => {
     //go to dungeon
     await cryptoQuest.methods
       .goIntoDungeon(character2.tokenId, [generatedItemId, 0, 0, 0, 0, 0], 0)
-      .call({ from: accounts[1], gas: '5000000' });
+      .send({ from: accounts[1], gas: '5000000' });
     const itemIdArray2 = await cryptoQuest.methods
       .getItemIdsByAddress(accounts[1])
       .call({ from: accounts[1], gas: '1000000' });

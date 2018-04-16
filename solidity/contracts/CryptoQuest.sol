@@ -264,7 +264,6 @@ contract CryptoQuest {
     function goIntoDungeon(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
         require(msg.sender == ownerByTokenId[characterId]);
         equip(characterId, itemIds);
-
         //get char
         Character memory character = characterByTokenId[characterId];
 
@@ -307,6 +306,7 @@ contract CryptoQuest {
       uint256[6] memory itemIds = c.items;
       if (charLost) {
         // choose an item and destroy it
+        // TODO(dankurka): if you have no item the character may die
         for (uint8 i = 0; i < itemIds.length; i++) {
             uint itemId = itemIds[i];
             if (itemId == 0) {
@@ -343,14 +343,19 @@ contract CryptoQuest {
     }
 
     function doGenerateRandomItem() private {
-      Item memory item = startItems[getNextRandomNumber() % startItems.length];
-      item.tokenId = lastTokenId++;
-
-      item.armor = item.armor + getNextRandomNumber() % 3;
-      item.damage = item.damage + getNextRandomNumber() % 5;
-      item.attackSpeed = item.attackSpeed + getNextRandomNumber() % 3;
-      item.evasion = item.evasion + getNextRandomNumber() % 3;
-      item.blockChance = item.blockChance + getNextRandomNumber() % 3;
+      Item memory templateItem = startItems[getNextRandomNumber() % startItems.length];
+      Item memory item = Item ({
+        tokenId: lastTokenId++,
+        slot: templateItem.slot,
+        name: templateItem.name,
+        description : templateItem.description,
+        armor : templateItem.armor + getNextRandomNumber() % 3,
+        damage: templateItem.damage + getNextRandomNumber() % 5,
+        attackSpeed: templateItem.attackSpeed + getNextRandomNumber() % 3,
+        evasion : templateItem.evasion + getNextRandomNumber() % 3,
+        blockChance : templateItem.blockChance + getNextRandomNumber() % 3,
+        onCharacterId : 0
+      });
 
       ownerByTokenId[item.tokenId] = msg.sender;
       itemsByTokenId[item.tokenId] = item;
