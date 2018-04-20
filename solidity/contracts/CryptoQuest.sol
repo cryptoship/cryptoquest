@@ -333,9 +333,12 @@ contract CryptoQuest {
         }
     }
 
-    function getItemDamageAndArmor(uint[6] itemIds) returns (uint8, uint8) {
-      uint8 itemArmor = 0;
-      uint8 itemDamage = 0;
+    function getItemSummary(uint[6] itemIds) private returns (ItemSummary) {
+      uint armor = 0;
+      uint damage = 0;
+      uint fireResistance = 0;
+      uint iceResistance = 0;
+      uint poisonResistance = 0;
       for (uint8 i = 0; i < itemIds.length; i++) {
          uint itemId = itemIds[i];
          if (itemId == 0) {
@@ -343,13 +346,82 @@ contract CryptoQuest {
          }
          require (ownerByTokenId[itemId] == msg.sender);
          Item memory item = itemsByTokenId[itemId];
-         itemArmor += item.armor;
-         itemDamage += item.damage;
+         armor += item.armor;
+         damage += item.damage;
+         fireResistance += item.fireResistance;
+         iceResistance += item.iceResistance;
+         poisonResistance += item.poisonResistance;
       }
 
-      return (itemDamage, itemArmor);
+      return ItemSummary({
+          armor : armor,
+          damage : damage,
+          fireResistance : fireResistance,
+          iceResistance : iceResistance,
+          poisonResistance : poisonResistance
+      });
     }
 
+
+    struct ItemSummary {
+      uint armor;
+      uint damage;
+      uint fireResistance;
+      uint iceResistance;
+      uint poisonResistance;
+    }
+
+
+
+    function calculateFightValues(uint8 characterId, uint[6] itemIds) private returns (CharacterFightValues) {
+      ItemSummary memory itemSummary = getItemSummary(itemIds);
+      Character memory character = characterByTokenId[characterId];
+
+      uint totalCharacterDamage = character.damage + itemSummary.damage;
+      uint totalFireResistance = character.fireResistance + itemSummary.armor + itemSummary.fireResistance;
+      uint totalIceResistance = character.iceResistance + itemSummary.armor + itemSummary.iceResistance;
+      uint totalPoisonResistance = character.poisonResistance + itemSummary.armor + itemSummary.poisonResistance;
+
+      uint[3] memory totalResistanceByElement;
+      totalResistanceByElement[0] = totalFireResistance;
+      totalResistanceByElement[1] = totalIceResistance;
+      totalResistanceByElement[2] = totalPoisonResistance;
+
+      return CharacterFightValues({
+        totalHealth : character.health,
+        totalCharacterDamage : totalCharacterDamage,
+        totalResistanceByElement : totalResistanceByElement
+      });
+    }
+
+    function calculateDungeonFightValues(uint dungeonId) private returns (DungeonFightValues) {
+      Dungeon memory dungeon = dungeons[dungeonId];
+      uint[3] memory totalDamageByElement;
+      totalDamageByElement[0] = dungeon.damage + dungeon.fireAttack;
+      totalDamageByElement[1] = dungeon.damage + dungeon.iceAttack;
+      totalDamageByElement[2] = dungeon.damage + dungeon.poisonAttack;
+
+      return DungeonFightValues({
+        totalHealth : dungeon.health,
+        totalDamageByElement: totalDamageByElement
+      });
+    }
+
+    struct CharacterFightValues {
+      uint totalHealth;
+      uint totalCharacterDamage;
+      uint[3] totalResistanceByElement;
+    }
+
+    struct DungeonFightValues {
+      uint totalHealth;
+      uint[3] totalDamageByElement;
+    }
+
+    function selectAttack(Dungeon dungeon) private returns (uint8) {
+      // TODO add random attack selection
+      return 0;
+    }
 
     function goIntoDungeon(uint8 characterId, uint[6] itemIds, uint dungeonId) public payable {
         require(msg.sender == ownerByTokenId[characterId]);
@@ -357,36 +429,32 @@ contract CryptoQuest {
         //get char
         Character memory character = characterByTokenId[characterId];
 
-        uint8 health;
-        uint8 strength;
-
-        uint8 itemArmor;
-        uint8 itemDamage;
-        (itemDamage, itemArmor) = getItemDamageAndArmor(itemIds);
-        //get totals
-       uint8 totalCharacterDamage = itemDamage + character.damage;
-       //get dungeon
-       Dungeon memory dungeon = dungeons[dungeonId];
+        CharacterFightValues memory fightValues = calculateFightValues(characterId, itemIds);
+        DungeonFightValues memory dungeonFightValues = calculateDungeonFightValues(dungeonId);
+        Dungeon memory dungeon = dungeons[dungeonId];
 
        bool charLost = false;
-       uint charHealth = character.health;
-       uint dungeonHealth = dungeon.health;
        uint damageOutput = 0;
 
        while (true) {
-          damageOutput = dungeon.damage  /*+randomDamage*/ - itemArmor;
-          if (damageOutput > charHealth) {
+
+          uint8 attackType = selectAttack(dungeon);
+          uint dungeonDamage = dungeonFightValues.totalDamageByElement[attackType];
+          uint resistance = fightValues.totalResistanceByElement[attackType];
+
+          damageOutput = dungeonDamage  /*+randomDamage*/ - resistance;
+          if (damageOutput > fightValues.totalHealth) {
             charLost = true;
             break;
           } else {
-            charHealth = charHealth - damageOutput;
+            fightValues.totalHealth = fightValues.totalHealth - damageOutput;
           }
 
-          damageOutput = totalCharacterDamage  /*+randomDamage*/;
-          if (damageOutput > dungeonHealth) {
+          damageOutput = fightValues.totalCharacterDamage  /*+randomDamage*/;
+          if (damageOutput > dungeonFightValues.totalHealth) {
             break;
           } else {
-            dungeonHealth = dungeonHealth - damageOutput;
+            dungeonFightValues.totalHealth = dungeonFightValues.totalHealth - damageOutput;
           }
        }
        calculateConsequences(charLost, character);
