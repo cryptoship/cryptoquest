@@ -13,21 +13,19 @@ import Items from './components/Items';
 import Characters from './components/Characters';
 import web3 from './utils/web3.js';
 import game from './utils/game';
+import {generateRandomCharacter, getItemIdsByAddress} from './utils/api'
 
 class App extends Component {
   async componentDidMount() {
-    // console.log(cryptoQuest)
+    
+    let stuff = await getItemIdsByAddress(accounts[0]);
+    console.log(stuff);
+
     const accounts = await web3.eth.getAccounts();
+    await generateRandomCharacter(0,'Derek3',accounts[0]);
+    let character = await getItemIdsByAddress(accounts[0]);
 
-    // let player = await game.methods
-    //   .generateCharacter(0, 'derek1', 10, 10, 40, 20, 10)
-    //   .send({ from: accounts[0], value: web3.utils.toWei('0.2', 'ether') });
-
-    let player = await game.methods
-      .generateRandomCharacter(0, 'Derek')
-      .send({ from: accounts[0], gas: '1000000', value: 100 });
-
-    console.log(player);
+    console.log(character);
   }
 
   render() {
