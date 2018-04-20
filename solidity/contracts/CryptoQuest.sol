@@ -13,6 +13,7 @@ contract CryptoQuest {
     mapping(address => uint[]) itemsByAddress; //give user address and get all items associated
 
     uint[] itemsInMarketPlace;
+    uint[] charactersInMarketPlace;
 
     Dungeon[] dungeons;
 
@@ -36,6 +37,9 @@ contract CryptoQuest {
         // items the Character is wearing
         uint[6] items;
         string name;
+
+        bool forSale;
+        uint price;
     }
 
     //item slots
@@ -261,6 +265,33 @@ contract CryptoQuest {
 
     function getItemsForSale() public returns (uint[])  {
       return itemsInMarketPlace;
+    }
+
+    function sendCharacterToMarketPlace(uint256 characterId, uint256 price) public {
+      require(msg.sender == ownerByTokenId[characterId]);
+      Character character = characterByTokenId[characterId];
+
+      // remove items from char
+      uint256[6] memory itemIds;
+      equip(characterId, itemIds);
+
+      character.forSale = true;
+      character.price = price;
+
+      charactersInMarketPlace.push(characterId);
+    }
+
+    function removeCharacterFromMarketPlace(uint256 characterId) public {
+      require(msg.sender == ownerByTokenId[characterId]);
+      Character character = characterByTokenId[characterId];
+      character.forSale = false;
+      characterByTokenId[characterId] = character;
+      uint index = findValueInArray(charactersInMarketPlace, characterId);
+      charactersInMarketPlace = removeFromArray(charactersInMarketPlace, index);
+    }
+
+    function getCharactersForSale() public returns (uint[])  {
+      return charactersInMarketPlace;
     }
 
     //equip character with items
@@ -607,12 +638,12 @@ contract CryptoQuest {
 
 
     //i feel like this function should return a struct of the character
-    function getCharacterDetails(uint characterId) public view returns (uint[14], string) {
+    function getCharacterDetails(uint characterId) public view returns (uint[16], string) {
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
         // Why do we need to do things like this as an array?
         // Are we sure there isn't a better way?
-        uint[14] memory array;
+        uint[16] memory array;
         array[0] = c.tokenId;
         array[1] = c.characterType;
 
@@ -622,13 +653,15 @@ contract CryptoQuest {
         array[5] = c.fireResistance;
         array[6] = c.iceResistance;
         array[7] = c.poisonResistance;
+        array[8] = c.forSale ? 1 : 0;
+        array[9] = c.price;
 
-        array[8] = c.items[0];
-        array[9] = c.items[1];
-        array[10] = c.items[2];
-        array[11] = c.items[3];
-        array[12] = c.items[4];
-        array[13] = c.items[5];
+        array[10] = c.items[0];
+        array[11] = c.items[1];
+        array[12] = c.items[2];
+        array[13] = c.items[3];
+        array[14] = c.items[4];
+        array[15] = c.items[5];
 
         return (array, c.name);
     }

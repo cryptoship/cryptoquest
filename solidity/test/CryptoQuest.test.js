@@ -322,6 +322,7 @@ describe('CryptoQuest', () => {
     assert.equal(0, item.poisonResistance);
     assert.equal('Dagger of doom', item.name);
     assert.equal('', item.description);
+    assert.equal(false, item.forSale);
 
     await cryptoQuest.methods.sendItemToMarketPlace(item.tokenId, 25).send({ from: accounts[1], gas: '1000000' });
     const item2 = Item.fromData(await cryptoQuest.methods.getItem(itemIdArray[0]).call({ from: accounts[0], gas: '5000000' }));
@@ -344,5 +345,37 @@ describe('CryptoQuest', () => {
 
     const itemArray2 = await cryptoQuest.methods.getItemsForSale().call({ from: accounts[1], gas: '1000000' });
     assert.deepEqual([], itemArray2);
+  });
+
+  it('users can set characters for sale', async () => {
+    await cryptoQuest.methods.setRandomNumbers([0, 0]).send({ from: accounts[0], gas: '1000000' });
+    await cryptoQuest.methods.setItemBasePrice(100).send({ from: accounts[0] });
+
+    await cryptoQuest.methods.generateRandomCharacter(0, 'Derek').send({ from: accounts[1], gas: '1000000', value: 100 });
+
+    const charIdArray = await cryptoQuest.methods
+      .getCharacterIdsByAddress(accounts[1])
+      .call({ from: accounts[0], gas: '1000000' });
+
+    assert.equal(1, charIdArray.length);
+    const array = await cryptoQuest.methods.getCharacterDetails(charIdArray[0]).call({ from: accounts[0], gas: '5000000' });
+    const character = Character.fromData(array);
+    assert.equal(false, character.forSale);
+
+    await cryptoQuest.methods.sendCharacterToMarketPlace(character.tokenId, 25).send({ from: accounts[1], gas: '1000000' });
+
+    const character2 = Character.fromData(await cryptoQuest.methods.getCharacterDetails(charIdArray[0]).call({ from: accounts[0], gas: '5000000' }));
+    assert.equal(true, character2.forSale);
+    assert.equal(25, character2.price);
+
+    const charForSaleArray = await cryptoQuest.methods.getCharactersForSale().call({ from: accounts[1], gas: '1000000' });
+    assert.deepEqual([character.tokenId], charForSaleArray);
+
+    await cryptoQuest.methods.removeCharacterFromMarketPlace(character.tokenId).send({ from: accounts[1], gas: '1000000' });
+    const character3 = Character.fromData(await cryptoQuest.methods.getCharacterDetails(charIdArray[0]).call({ from: accounts[0], gas: '5000000' }));
+    assert.equal(false, character3.forSale);
+
+    const charForSaleArray1 = await cryptoQuest.methods.getCharactersForSale().call({ from: accounts[1], gas: '1000000' });
+    assert.deepEqual([], charForSaleArray1);
   });
 });

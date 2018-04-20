@@ -34,7 +34,7 @@ class Item {
     this.fireResistance = fireResistance;
     this.iceResistance = iceResistance;
     this.poisonResistance = poisonResistance;
-    this.forSale = forSale;
+    this.forSale = !!+forSale;
     this.price = price;
   }
 }
