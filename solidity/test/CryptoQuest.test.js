@@ -16,7 +16,7 @@ beforeEach(async () => {
 
   cryptoQuest = await new web3.eth.Contract(JSON.parse(interface))
     .deploy({ data: bytecode })
-    .send({ from: accounts[0], gas: '5000000' });
+    .send({ from: accounts[0], gas: '6000000' });
 
   cryptoQuest.setProvider(provider);
 });
