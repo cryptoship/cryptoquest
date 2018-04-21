@@ -1,8 +1,8 @@
 class Character {
   static fromData(data) {
     const props = data[0];
-    if (props.length !== 16) {
-      throw new Error(`array length should be 16. Instead it's ${props.length}`);
+    if (props.length !== 18) {
+      throw new Error(`array length should be 18. Instead it's ${props.length}`);
     }
 
     return new Character(
@@ -17,14 +17,17 @@ class Character {
       props[7] /*posionResistance*/,
       props[8] /*forSale*/,
       props[9] /*price*/,
-      props.slice(10) /*itemIds*/
+      props[10] /*currentHealth*/,
+      props[11] /*healthTime*/,
+      props.slice(12) /*itemIds*/
     );
 
     return (array, c.name);
   }
 
   constructor(name, tokenId, characterType, level, health, damage,
-    fireResistance, iceResistance, poisonResistance, forSale, price, itemIds) {
+    fireResistance, iceResistance, poisonResistance, forSale, price,
+    currentHealth, healthTime, itemIds) {
     this.name = name;
     this.tokenId = tokenId;
     this.characterType = characterType;
@@ -36,6 +39,8 @@ class Character {
     this.poisonResistance = poisonResistance;
     this.forSale = !!+forSale;
     this.price = price;
+    this.currentHealth = +currentHealth;
+    this.healthTime = healthTime;
     this.itemIds = itemIds.slice();
   }
 }

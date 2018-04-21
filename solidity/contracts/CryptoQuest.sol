@@ -40,6 +40,8 @@ contract CryptoQuest {
 
         bool forSale;
         uint price;
+        uint8 currentHealth;
+        uint healthTime;
     }
 
     //item slots
@@ -387,8 +389,13 @@ contract CryptoQuest {
       totalResistanceByElement[1] = totalIceResistance;
       totalResistanceByElement[2] = totalPoisonResistance;
 
+
+      // replenish health
+      uint newHealth = character.currentHealth + ((now - character.healthTime)/3600) * 10;
+      uint totalHealth = newHealth > character.health ? character.health : newHealth;
+
       return CharacterFightValues({
-        totalHealth : character.health,
+        totalHealth : totalHealth,
         totalCharacterDamage : totalCharacterDamage,
         totalResistanceByElement : totalResistanceByElement
       });
@@ -457,10 +464,16 @@ contract CryptoQuest {
             dungeonFightValues.totalHealth = dungeonFightValues.totalHealth - damageOutput;
           }
        }
+
+
+       character.currentHealth = uint8(fightValues.totalHealth);
+       character.healthTime = now;
        calculateConsequences(charLost, character);
     }
 
     function calculateConsequences(bool charLost, Character c) private {
+
+
       uint256[6] memory itemIds = c.items;
       if (charLost) {
         // choose an item and destroy it
@@ -609,7 +622,10 @@ contract CryptoQuest {
         character.poisonResistance = poisonResistance;
         character.level = level;
         character.name = name;
+        character.forSale = false;
+        character.currentHealth = health;
         character.tokenId = lastTokenId++;
+
 
         ownerByTokenId[character.tokenId] = newOwner;
         characterByTokenId[character.tokenId] = character;
@@ -706,12 +722,12 @@ contract CryptoQuest {
 
 
     //i feel like this function should return a struct of the character
-    function getCharacterDetails(uint characterId) public view returns (uint[16], string) {
+    function getCharacterDetails(uint characterId) public view returns (uint[18], string) {
         Character memory c = characterByTokenId[characterId];
         require(c.tokenId != 0);
         // Why do we need to do things like this as an array?
         // Are we sure there isn't a better way?
-        uint[16] memory array;
+        uint[18] memory array;
         array[0] = c.tokenId;
         array[1] = c.characterType;
 
@@ -723,13 +739,15 @@ contract CryptoQuest {
         array[7] = c.poisonResistance;
         array[8] = c.forSale ? 1 : 0;
         array[9] = c.price;
+        array[10] = c.currentHealth;
+        array[11] = c.healthTime;
 
-        array[10] = c.items[0];
-        array[11] = c.items[1];
-        array[12] = c.items[2];
-        array[13] = c.items[3];
-        array[14] = c.items[4];
-        array[15] = c.items[5];
+        array[12] = c.items[0];
+        array[13] = c.items[1];
+        array[14] = c.items[2];
+        array[15] = c.items[3];
+        array[16] = c.items[4];
+        array[17] = c.items[5];
 
         return (array, c.name);
     }
