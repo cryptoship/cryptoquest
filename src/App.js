@@ -11,22 +11,11 @@ import Play from './pages/Play';
 import Market from './pages/Market';
 import Items from './components/Items';
 import Characters from './components/Characters';
-import web3 from './utils/web3.js';
-import game from './utils/game';
-import {generateRandomCharacter, getItemIdsByAddress} from './utils/api'
+
 
 class App extends Component {
-  async componentDidMount() {
-    
-    let stuff = await getItemIdsByAddress(accounts[0]);
-    console.log(stuff);
 
-    const accounts = await web3.eth.getAccounts();
-    await generateRandomCharacter(0,'Derek3',accounts[0]);
-    let character = await getItemIdsByAddress(accounts[0]);
 
-    console.log(character);
-  }
 
   render() {
     return (

@@ -260,7 +260,7 @@ describe('CryptoQuest', () => {
 
     assert.equal(1, itemIdArray.length);
     const generatedItemId = itemIdArray[0];
-    const itemArray = await cryptoQuest.methods.getItem(generatedItemId).call({ from: accounts[0], gas: '5000000' });
+    const itemArray = await cryptoQuest.methods.getItem().call({ from: accounts[0], gas: '5000000' });
 
     //generate a character
     await cryptoQuest.methods.setCharacterBasePrice(100).send({ from: accounts[0] });
