@@ -20,7 +20,7 @@ class Character {
       props.slice(10) /*itemIds*/
     );
 
-    return (array, c.name);
+    // return (array, c.name);
   }
 
   constructor(name, tokenId, characterType, level, health, damage,
