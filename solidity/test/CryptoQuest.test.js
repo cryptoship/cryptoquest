@@ -295,6 +295,13 @@ describe('CryptoQuest', () => {
       .getItemIdsByAddress(accounts[1])
       .call({ from: accounts[1], gas: '1000000' });
     assert.equal(2, itemIdArray2.length);
+
+    //set char
+    const characterData1 = await cryptoQuest.methods
+      .getCharacterDetails(charIdArray[0])
+      .call({ from: accounts[1], gas: '5000000' });
+    const character1 = Character.fromData(characterData1);
+    assert.equal(5, character1.currentHealth);
   });
 
   it('users can set items for sale', async () => {
