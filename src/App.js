@@ -3,7 +3,6 @@ import { Switch, Route } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import PageWrapper from './components/PageWrapper';
 import './App.css';
-
 import Landing from './pages/Landing';
 import About from './pages/About';
 import Inventory from './pages/Inventory';
@@ -14,8 +13,6 @@ import Characters from './components/Characters';
 
 
 class App extends Component {
-
-
 
   render() {
     return (

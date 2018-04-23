@@ -22,7 +22,7 @@ export default class Landing extends Component {
     character: { name: '', stats: '' },
     characterIndex: 0,
     itemIndex: 1,
-    itemDetails: '',    
+    itemDetails: '',
     dungeonNumber: 0,
     characterId: 0,
     head: 0,
@@ -52,7 +52,7 @@ export default class Landing extends Component {
   };
 
   getItemIdsByAddress = async () => {
-    let items = await getItemIdsByAddress(this.state.account);    
+    let items = await getItemIdsByAddress(this.state.account);
     this.setState({ items });
   };
 
@@ -65,22 +65,26 @@ export default class Landing extends Component {
     this.setState({ itemDetails: details[1] });
   };
 
-  goToDungeonWithItems = async() => {
+  goToDungeonWithItems = async () => {
     let characterData = await getCharacterDetails(this.state.characterIndex, this.state.account);
-    character.fromData(characterData);
-    console.log("character.itemIds",character.itemIds)
-    await goIntoDungeon(this.state.characterIndex, character.itemIds, this.state.dungeonNumber, this.state.account);
+    console.log('characterData', characterData);
+    let char = character.fromData(characterData);
+    console.log('character', char);
+
+    await goIntoDungeon(this.state.characterIndex, char.itemIds, this.state.dungeonNumber, this.state.account);
   };
 
   equipItem = async => {
     let itemArray = [];
-    itemArray.push(Number(this.state.head));
-    itemArray.push(Number(this.state.neck));
-    itemArray.push(Number(this.state.body));
-    itemArray.push(Number(this.state.feet));
-    itemArray.push(Number(this.state.leftHand));
-    itemArray.push(Number(this.state.rightHand));
+    itemArray.push(this.state.head);
+    itemArray.push(this.state.neck);
+    itemArray.push(this.state.body);
+    itemArray.push(this.state.feet);
+    itemArray.push(this.state.leftHand);
+    itemArray.push(this.state.rightHand);
 
+    console.log('itemArray', itemArray)
+    
     equip(this.state.characterId, itemArray, this.state.account);
   };
 

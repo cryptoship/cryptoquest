@@ -6,6 +6,26 @@ class Character {
     }
 
     return new Character(
+
+      // uint256 tokenId;
+
+      // // attributes of the character
+      // uint8 characterType;
+      // uint8 level;
+      // uint8 health;
+      // uint8 damage;
+      // uint8 fireResistance;
+      // uint8 iceResistance;
+      // uint8 poisonResistance;
+      // // items the Character is wearing
+      // uint[6] items;
+      // string name;
+
+      // bool forSale;
+      // uint price;
+      // uint8 currentHealth;
+      // uint healthTime;
+
       data[1] /*name*/,
       props[0] /*tokenId*/,
       props[1] /*characterType*/,
