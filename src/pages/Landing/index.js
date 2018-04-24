@@ -43,8 +43,10 @@ export default class Landing extends Component {
   };
 
   getCharacterDeets = async () => {
-    let character = await getCharacterDetails(this.state.characterIndex, this.state.account);
-    this.setState({ character: { stats: character[0], name: character[1] } });
+    let characterData = await getCharacterDetails(this.state.characterIndex, this.state.account);
+    let char = character.fromData(characterData);
+    console.log('char', char);
+    this.setState({ character: char });
   };
 
   generateCharacter = async () => {
@@ -67,10 +69,9 @@ export default class Landing extends Component {
 
   goToDungeonWithItems = async () => {
     let characterData = await getCharacterDetails(this.state.characterIndex, this.state.account);
-    console.log('characterData', characterData);
+    // console.log('characterData', characterData);
     let char = character.fromData(characterData);
     console.log('character', char);
-
     await goIntoDungeon(this.state.characterIndex, char.itemIds, this.state.dungeonNumber, this.state.account);
   };
 
@@ -83,8 +84,8 @@ export default class Landing extends Component {
     itemArray.push(this.state.leftHand);
     itemArray.push(this.state.rightHand);
 
-    console.log('itemArray', itemArray)
-    
+    console.log('itemArray', itemArray);
+
     equip(this.state.characterId, itemArray, this.state.account);
   };
 
@@ -187,9 +188,35 @@ export default class Landing extends Component {
         <div>
           <div>characters token array</div>
           <div>{this.state.characters}</div>
-          <div>character</div>
+          <b>character</b>
+          {/* <div>{this.state.character.name}</div>
+          <div>{this.state.character.stats}</div> */}
+          <div>name</div>
           <div>{this.state.character.name}</div>
-          <div>{this.state.character.stats}</div>
+          <div>characterType</div>
+          <div>{this.state.character.characterType}</div>
+          <div>currentHealth</div>
+          <div>{this.state.character.currentHealth}</div>
+          <div>damage</div>
+          <div>{this.state.character.damage}</div>
+          <div>fireResistance</div>
+          <div>{this.state.character.fireResistance}</div>
+          <div>forSale</div>
+          <div>{this.state.character.forSale}</div>
+          <div>health</div>
+          <div>{this.state.character.health}</div>
+          <div>healthTime</div>
+          <div>{this.state.character.healthTime}</div>
+          <div>iceResistance</div>
+          <div>{this.state.character.iceResistance}</div>
+          <div>level</div>
+          <div>{this.state.character.level}</div>
+          <div>poisonResistance</div>
+          <div>{this.state.character.poisonResistance}</div>
+          <div>price</div>
+          <div>{this.state.character.price}</div>
+          <div>tokenId</div>
+          <div>{this.state.character.tokenId}</div>
           <div>items</div>
           <div>{this.state.items}</div>
           <div>item details</div>
