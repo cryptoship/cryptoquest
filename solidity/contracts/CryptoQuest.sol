@@ -1,6 +1,97 @@
 pragma solidity ^0.4.21;
 
+contract ERC721 {
+   // ERC20 compatible functions
+   function name() constant returns (string name);
+   function symbol() constant returns (string symbol);
+   function totalSupply() constant returns (uint256 totalSupply);
+   function balanceOf(address _owner) constant returns (uint balance);
+   // Functions that define ownership
+   function ownerOf(uint256 _tokenId) constant returns (address owner);
+   function approve(address _to, uint256 _tokenId);
+   function takeOwnership(uint256 _tokenId);
+   function transfer(address _to, uint256 _tokenId);
+   function tokenOfOwnerByIndex(address _owner, uint256 _index) constant returns (uint tokenId);
+   // Token metadata
+   function tokenMetadata(uint256 _tokenId) constant returns (string infoUrl);
+   // Events
+   event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+   event Approval(address indexed _owner, address indexed _approved, uint256 _tokenId);
+}
+
+
 contract CryptoQuest {
+
+  // Events
+  event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 _tokenId);
+
+    // ERC721 functions
+    function name() constant returns (string name) {
+      return "CryptoQuestCoin";
+    }
+
+    function symbol() constant returns (string symbol) {
+      return "CQC";
+    }
+
+    function totalSupply() constant returns (uint256 totalSupply) {
+      return totalTokens;
+    }
+
+    function balanceOf(address _owner) constant returns (uint balance) {
+      uint[] characterIds = charactersByAddress[_owner];
+      uint[] itemIds = itemsByAddress[_owner];
+      return characterIds.length + itemIds.length;
+    }
+
+    function ownerOf(uint256 _tokenId) constant returns (address owner) {
+      return ownerByTokenId[_tokenId];
+    }
+
+    function approve(address _to, uint256 _tokenId) {
+      // TODO implement
+    }
+    function takeOwnership(uint256 _tokenId) {
+      // TODO implement
+    }
+
+    function transfer(address _to, uint256 _tokenId) {
+      require(ownerByTokenId[_tokenId] == msg.sender);
+      Character memory character = characterByTokenId[_tokenId];
+      uint256[6] memory itemIds;
+      if (character.tokenId != 0) {
+        // its a char
+        // remove items from char
+        equip(_tokenId, itemIds);
+
+        if (character.forSale) {
+          removeCharacterFromMarketPlace(_tokenId);
+        }
+        transferCharacter(msg.sender, _to, _tokenId);
+        Transfer(msg.sender, _to, _tokenId);
+        return;
+      }
+
+      Item memory item = itemsByTokenId[_tokenId];
+      if (item.tokenId != 0) {
+
+        if (item.onCharacterId != 0) {
+          // just unequip the whole character for now
+          equip(_tokenId, itemIds);
+        }
+
+        if (item.forSale) {
+          removeItemFromMarketPlace(_tokenId);
+        }
+        Transfer(msg.sender, _to, _tokenId);
+        return;
+      }
+
+      // should not get here
+      require(false);
+    }
+
 
     address public owner;
 
@@ -8,6 +99,7 @@ contract CryptoQuest {
     mapping(uint => Character) characterByTokenId;
     mapping(uint => Item) itemsByTokenId;
     uint lastTokenId;
+    uint totalTokens;
 
     mapping(address => uint[]) charactersByAddress; //give user address and get all char associated
     mapping(address => uint[]) itemsByAddress; //give user address and get all items associated
@@ -520,6 +612,8 @@ contract CryptoQuest {
         price : 0
       });
 
+      totalTokens++;
+
       ownerByTokenId[item.tokenId] = msg.sender;
       itemsByTokenId[item.tokenId] = item;
       itemsByAddress[msg.sender].push(item.tokenId);
@@ -625,6 +719,8 @@ contract CryptoQuest {
         character.forSale = false;
         character.currentHealth = health;
         character.tokenId = lastTokenId++;
+
+        totalTokens++;
 
 
         ownerByTokenId[character.tokenId] = newOwner;
