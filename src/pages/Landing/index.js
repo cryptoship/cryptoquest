@@ -99,12 +99,7 @@ export default class Landing extends Component {
     this.setState({ itemIndex: v });
   };
 
-  //charIndex
-  // updatecharIndex = e => {
-  //   let v = e.target.value;
-  //   this.setState({ charIndex: v });
-  // };
-  //dungonNumber
+
   updateDungeonNumber = e => {
     let v = e.target.value;
     this.setState({ dungeonNumber: v });
